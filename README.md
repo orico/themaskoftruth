@@ -1,0 +1,140 @@
+# The Floor Is a Lie
+
+![Game Screenshot](screenshot.png)
+
+A challenging top-down memory puzzle game built with Python and Pygame. Navigate through deceptive tile mazes where some floors are real and others are illusions that will make you fall. Use your memory and timing to reach the exit!
+
+## 🎮 Features
+
+- **Memory-based gameplay**: Remember tile patterns and use a mask to reveal hidden dangers
+- **Dynamic tile system**: Real tiles are safe, fake tiles cause you to fall
+- **Mask mechanics**: Temporarily reveal all tiles but with a cooldown period
+- **Time-based scoring**: Complete levels faster for higher scores
+- **Built-in level editor**: Create and modify your own levels
+- **Save/load system**: Persist your custom levels
+- **Intuitive controls**: Simple keyboard controls for easy gameplay
+
+## 🚀 Installation
+
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package installer)
+
+### Install from source
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/the-floor-is-a-lie.git
+cd the-floor-is-a-lie
+
+# Install dependencies
+pip install -e .
+```
+
+### Alternative: Install dependencies manually
+```bash
+pip install pygame==2.5.2 pygame_gui==0.6.9
+```
+
+## 🎯 How to Play
+
+### Objective
+Navigate from the start tile (green) to the exit tile (red) without falling through fake tiles (invisible holes).
+
+### Controls
+- **Arrow Keys / WASD**: Move your character
+- **M**: Toggle mask (reveals all tiles temporarily)
+- **R**: Restart level (when game over)
+- **E**: Enter level editor
+- **ESC**: Exit level editor
+
+### Gameplay Mechanics
+
+1. **Tiles**:
+   - **Start** (Green): Where you begin
+   - **Exit** (Red): Your goal
+   - **Real** (Gray): Safe tiles
+   - **Fake** (Invisible): Dangerous tiles that make you fall
+
+2. **Mask System**:
+   - Press **M** to activate your mask and reveal all tiles
+   - The mask has a limited duration and cooldown
+   - Use it strategically to memorize tile patterns
+
+3. **Scoring**:
+   - Complete levels faster for higher scores
+   - Bonus points for efficient mask usage
+
+## 🛠️ Level Editor
+
+Create and modify your own levels with the built-in editor:
+
+1. Press **E** during gameplay to enter the editor
+2. **Left Click**: Place tiles
+3. **Right Click**: Remove tiles
+4. **Tile Types**:
+   - **S**: Start position
+   - **E**: Exit position
+   - **R**: Real tile
+   - **F**: Fake tile
+5. Press **ESC** to save and exit
+
+Levels are saved as JSON files in the `levels/` directory.
+
+## 🏗️ Development
+
+### Project Structure
+```
+the-floor-is-a-lie/
+├── main.py              # Main game entry point
+├── config.py            # Game configuration
+├── player.py            # Player character logic
+├── level.py             # Level loading and rendering
+├── tile.py              # Tile system
+├── score.py             # Scoring system
+├── ui.py                # User interface
+├── level_editor.py      # Built-in level editor
+├── levels/              # Level files
+│   └── level1.json
+├── pyproject.toml       # Project configuration
+└── README.md           # This file
+```
+
+### Running in Development Mode
+```bash
+python main.py
+```
+
+### Building a Distribution
+```bash
+# Build wheel
+python -m build
+
+# Install locally for testing
+pip install -e .
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Pygame](https://www.pygame.org/) and [Pygame GUI](https://pygame-gui.readthedocs.io/)
+- Inspired by memory-based puzzle games
+- Thanks to the open-source gaming community
+
+## 🎮 Screenshots
+
+*[Add screenshots here when available]*
+
+---
+
+**Enjoy the game! Remember, the floor is a lie... 🕳️**

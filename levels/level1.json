@@ -1,0 +1,21 @@
+{
+  "name": "The Floor Is a Lie - Level 1",
+  "grid": [
+    ["start", "real", "real", "real", "real", "real", "real", "real", "real", "real", "exit"],
+    ["fake", "fake", "fake", "real", "real", "real", "fake", "fake", "fake", "fake", "real"],
+    ["real", "real", "fake", "real", "fake", "fake", "fake", "real", "real", "real", "real"],
+    ["real", "real", "fake", "fake", "fake", "real", "real", "real", "fake", "fake", "fake"],
+    ["real", "fake", "real", "real", "real", "real", "fake", "fake", "fake", "real", "real"],
+    ["real", "fake", "fake", "fake", "real", "real", "real", "real", "real", "real", "real"],
+    ["real", "real", "real", "real", "real", "fake", "fake", "fake", "real", "real", "real"],
+    ["fake", "fake", "fake", "real", "real", "real", "real", "real", "real", "fake", "real"],
+    ["real", "real", "real", "real", "fake", "fake", "fake", "real", "real", "real", "real"],
+    ["real", "fake", "fake", "fake", "real", "real", "real", "real", "fake", "real", "real"]
+  ],
+  "config": {
+    "mask_duration": 2.0,
+    "mask_cooldown": 3.0,
+    "time_thresholds": [30, 60, 120],
+    "mask_threshold": 5
+  }
+}

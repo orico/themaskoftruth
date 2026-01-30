@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "the-floor-is-a-lie"
+version = "0.1.0"
+description = "A top-down memory puzzle game where the floor tiles lie to you"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment :: Puzzle Games",
+]
+dependencies = [
+    "pygame==2.5.2",
+    "pygame_gui==0.6.9",
+]
+
+[project.scripts]
+the-floor-is-a-lie = "main:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/the-floor-is-a-lie"
+Repository = "https://github.com/yourusername/the-floor-is-a-lie"
+Issues = "https://github.com/yourusername/the-floor-is-a-lie/issues"
+
+[tool.setuptools]
+packages = ["."]
+package-dir = {"" = "."}
+
+[tool.setuptools.package-data]
+"" = ["levels/*.json"]
