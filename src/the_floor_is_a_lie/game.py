@@ -272,7 +272,7 @@ class Game:
             ],
             "config": {
                 "mask_duration": 2.0,
-                "mask_cooldown": 3.0,
+                "mask_cooldown": 5.0,
                 "time_thresholds": [30, 60, 120],
                 "mask_threshold": 5,
             },

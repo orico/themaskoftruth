@@ -36,7 +36,7 @@ class Config:
 
     # Mask settings (default values, can be overridden by level)
     MASK_DURATION = 2.0  # seconds mask stays active
-    MASK_COOLDOWN = 3.0  # seconds to recharge after use
+    MASK_COOLDOWN = 5.0  # seconds to recharge after use
 
     # Scoring settings (default values, can be overridden by level)
     TIME_THRESHOLDS = [30, 60, 120]  # seconds for 3, 2, 1 stars
