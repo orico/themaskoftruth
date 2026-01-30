@@ -52,6 +52,10 @@ class Config:
     EDITOR_BUTTON_HEIGHT = 30
     EDITOR_TOOLBAR_WIDTH = 200
 
+    # Music settings
+    MUSIC_FILE = "music/audio-energetic-anime-music.mp3"
+    MUSIC_VOLUME = 0.3  # Default volume (0.0 to 1.0)
+
     @classmethod
     def get_font(cls, size="medium"):
         """Get pygame font with specified size"""

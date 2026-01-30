@@ -11,6 +11,7 @@ import pygame_gui
 from .config import Config
 from .level import Level
 from .level_editor import LevelEditor
+from .music import Music
 from .player import Player
 from .score import ScoreSystem
 from .ui import RESTART_FROM_LEVEL_1_EVENT, RESTART_GAME_EVENT, UI
@@ -53,6 +54,7 @@ class Game:
         self.score_system: Optional[ScoreSystem] = None
         self.ui: Optional[UI] = None
         self.level_editor: Optional[LevelEditor] = None
+        self.music: Optional[Music] = None
 
         # Initialize game
         self.initialize_game()
@@ -130,6 +132,7 @@ class Game:
         self.level = Level(self.config)
         self.score_system = ScoreSystem(self.config)
         self.ui = UI(self.config, self.ui_manager)
+        self.music = Music(self.config.MUSIC_FILE, self.config.MUSIC_VOLUME)
 
         # Load levels configuration
         if not self.load_levels_config():
@@ -158,6 +161,9 @@ class Game:
         logger.debug(
             f"Game modules initialized with level {self.current_level_index + 1}"
         )
+
+        # Start background music
+        self.music.play()
 
     def create_default_level(self):
         """Create a basic default level if none exists."""
@@ -257,6 +263,14 @@ class Game:
             elif event.key == pygame.K_e:
                 logger.info("E key pressed - entering level editor")
                 self.enter_level_editor()
+            elif event.key == pygame.K_b:
+                logger.info("B key pressed - toggling background music")
+                if self.music:
+                    self.music.toggle_pause()
+            elif event.key == pygame.K_u:
+                logger.info("U key pressed - toggling music mute")
+                if self.music:
+                    self.music.toggle_mute()
 
         # Handle movement input
         keys = pygame.key.get_pressed()
