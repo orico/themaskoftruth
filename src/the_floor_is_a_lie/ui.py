@@ -325,7 +325,7 @@ class UI:
 
         self.restart_level_1_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, button_y), (150, 40)),
-            text="Restart from Level 1",
+            text="Restart",
             manager=self.ui_manager,
             container=self.result_panel,
         )
