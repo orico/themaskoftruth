@@ -4,8 +4,6 @@ import json
 import os
 import tempfile
 
-import pytest
-
 from src.the_floor_is_a_lie.config import Config
 from src.the_floor_is_a_lie.level import Level
 from src.the_floor_is_a_lie.tile import TileType
@@ -142,7 +140,9 @@ class TestLevel:
 
         # Test walkability without mask
         assert self.level.is_walkable((0, 0), False)  # Real tile
-        assert not self.level.is_walkable((1, 0), False)  # Fake tile without mask
+        assert self.level.is_walkable(
+            (1, 0), False
+        )  # Fake tile is walkable (but deadly)
         assert not self.level.is_walkable((2, 0), False)  # Empty tile
         assert self.level.is_walkable((0, 1), False)  # Start tile
 
@@ -170,7 +170,7 @@ class TestLevel:
 
         # Test safety with mask
         assert self.level.is_safe((0, 0), True)  # Real tile still safe
-        assert self.level.is_safe((1, 0), True)  # Fake tile safe with mask
+        assert not self.level.is_safe((1, 0), True)  # Fake tile never safe
         assert not self.level.is_safe((2, 0), True)  # Empty tile still dangerous
 
     def test_exit_detection(self):

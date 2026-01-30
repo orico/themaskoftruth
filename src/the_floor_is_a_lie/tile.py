@@ -48,14 +48,16 @@ class Tile:
         elif self.type == TileType.REAL:
             return True
         elif self.type == TileType.FAKE:
-            # Fake tiles are only walkable when mask is active
-            return mask_active
+            # Fake tiles are always walkable, but they're deadly
+            return True
         elif self.type in [TileType.START, TileType.EXIT]:
             return True
         return False
 
     def is_safe(self, mask_active: bool = False) -> bool:
         """Check if tile is safe to walk on (won't cause death)"""
+        if self.type == TileType.FAKE:
+            return False  # Fake tiles are always dangerous
         return self.is_walkable(mask_active)
 
     def get_display_color(self, mask_active: bool = False) -> Tuple[int, int, int]:
