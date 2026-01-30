@@ -286,6 +286,10 @@ class Game:
                 logger.info("U key pressed - toggling music mute")
                 if self.music:
                     self.music.toggle_mute()
+            elif event.key == pygame.K_s:
+                logger.info("S key pressed - toggling sound effects mute")
+                if self.sound_effects:
+                    self.sound_effects.toggle_mute()
 
         # Handle movement input
         keys = pygame.key.get_pressed()

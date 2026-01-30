@@ -77,7 +77,7 @@ class UI:
                 (10, self.config.SCREEN_HEIGHT - 60),
                 (self.config.SCREEN_WIDTH - 20, 50),
             ),
-            text="M: Toggle Mask | Arrow Keys: Move | Reach the yellow exit!",
+            text="M: Mask | B: Music | U: Mute Music | S: Mute SFX | Arrows: Move",
             manager=self.ui_manager,
         )
 
