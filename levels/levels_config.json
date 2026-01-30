@@ -1,0 +1,14 @@
+{
+  "levels": [
+    {
+      "id": "level1",
+      "file": "level1.json",
+      "name": "The Floor Is a Lie - Level 1"
+    },
+    {
+      "id": "level2",
+      "file": "level2.json",
+      "name": "The Floor Is a Lie - Level 2"
+    }
+  ]
+}

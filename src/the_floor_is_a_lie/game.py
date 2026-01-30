@@ -1,8 +1,9 @@
 """Main game class for The Floor Is a Lie."""
 
+import json
 import logging
 import sys
-from typing import Optional
+from typing import Dict, List, Optional
 
 import pygame
 import pygame_gui
@@ -42,6 +43,10 @@ class Game:
         self.game_state = "playing"  # menu, playing, game_over, level_editor
         self.clock = pygame.time.Clock()
 
+        # Level management
+        self.levels_config: List[Dict] = []
+        self.current_level_index = 0
+
         # Initialize game modules
         self.player: Optional[Player] = None
         self.level: Optional[Level] = None
@@ -53,6 +58,63 @@ class Game:
         self.initialize_game()
         logger.info("Game initialized successfully")
 
+    def load_levels_config(self) -> bool:
+        """Load levels configuration from file."""
+        try:
+            config_path = "levels/levels_config.json"
+            with open(config_path, "r") as f:
+                config_data = json.load(f)
+                self.levels_config = config_data.get("levels", [])
+                logger.info(f"Loaded {len(self.levels_config)} levels from config")
+                return True
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.warning(f"Failed to load levels config: {e}")
+            return False
+
+    def load_level_by_index(self, level_index: int) -> bool:
+        """Load a specific level by index from the levels config."""
+        if not self.levels_config:
+            logger.warning("No levels config loaded")
+            return False
+
+        if level_index < 0 or level_index >= len(self.levels_config):
+            logger.warning(f"Invalid level index: {level_index}")
+            return False
+
+        level_data = self.levels_config[level_index]
+        level_file = f"levels/{level_data['file']}"
+
+        logger.info(
+            f"Loading level {level_index + 1}: {level_data['name']} ({level_file})"
+        )
+        return self.level.load_level(level_file)
+
+    def get_next_level_index(self) -> Optional[int]:
+        """Get the index of the next level, or None if no more levels."""
+        next_index = self.current_level_index + 1
+        if next_index < len(self.levels_config):
+            return next_index
+        return None
+
+    def load_next_level(self):
+        """Load the next level in sequence."""
+        next_level_index = self.get_next_level_index()
+        if next_level_index is not None:
+            # Load the next level first
+            self.current_level_index = next_level_index
+            if not self.load_level_by_index(self.current_level_index):
+                logger.error(f"Failed to load next level {self.current_level_index}")
+                self.game_over()
+                return
+
+            # Reset game modules for new level
+            self.player.reset(self.level.start_pos)
+            self.score_system.reset()
+
+            logger.info(f"Successfully loaded level {self.current_level_index + 1}")
+        else:
+            logger.info("No more levels to load")
+
     def initialize_game(self):
         """Initialize or reset game modules."""
         logger.debug("Initializing game modules...")
@@ -61,9 +123,18 @@ class Game:
         self.score_system = ScoreSystem(self.config)
         self.ui = UI(self.config, self.ui_manager)
 
+        # Load levels configuration
+        if not self.load_levels_config():
+            logger.warning(
+                "Failed to load levels config, falling back to default level"
+            )
+            self.create_default_level()
+            return
+
         # Load first level
-        if not self.level.load_level("levels/level1.json"):
-            logger.warning("Failed to load level, creating default level...")
+        self.current_level_index = 0
+        if not self.load_level_by_index(self.current_level_index):
+            logger.warning("Failed to load first level, creating default level...")
             self.create_default_level()
 
         logger.debug("Game modules initialized")
@@ -329,8 +400,16 @@ class Game:
     def game_win(self):
         """Handle game win condition."""
         self.score_system.complete_level()
-        self.ui.show_win_screen(self.score_system)
-        self.game_state = "game_over"
+
+        # Check if there's a next level
+        next_level_index = self.get_next_level_index()
+        if next_level_index is not None:
+            logger.info(f"Level completed! Loading next level: {next_level_index + 1}")
+            self.load_next_level()
+        else:
+            logger.info("All levels completed!")
+            self.ui.show_win_screen(self.score_system)
+            self.game_state = "game_over"
 
     def game_over(self):
         """Handle game over condition."""
