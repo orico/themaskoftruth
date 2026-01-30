@@ -44,6 +44,10 @@ class UI:
         self.restart_level_1_button = None
         self.editor_button = None
 
+        # Sprites for result screens
+        self.game_over_sprite = None
+        self.game_over_sprite_loaded = False
+
         # Mask image for display
         self.mask_image = None
         self.mask_image_loaded = False
@@ -53,6 +57,7 @@ class UI:
         # Initialize UI elements
         self.create_ui_elements()
         self.load_mask_image()
+        self.load_game_over_sprite()
 
     def load_mask_image(self):
         """Load the mask display image and create small icon"""
@@ -82,6 +87,18 @@ class UI:
             logger.warning(f"Failed to load mask image: {e}")
             self.mask_image_loaded = False
             self.mask_icon_loaded = False
+
+    def load_game_over_sprite(self):
+        """Load the game over menu sprite"""
+        try:
+            self.game_over_sprite = pygame.image.load(
+                "sprites/game-over-menu.png"
+            ).convert_alpha()
+            self.game_over_sprite_loaded = True
+            logger.info("Game over sprite loaded successfully")
+        except (pygame.error, FileNotFoundError) as e:
+            logger.warning(f"Failed to load game over sprite: {e}")
+            self.game_over_sprite_loaded = False
 
     def create_ui_elements(self):
         """Create initial UI elements"""
@@ -207,6 +224,11 @@ class UI:
         # Render the image
         screen.blit(scaled_image, (x, y))
 
+    def render_game_over_sprite(self, screen: pygame.Surface):
+        """Render the game over sprite"""
+        if self.game_over_sprite_loaded and hasattr(self, "game_over_sprite_rect"):
+            screen.blit(self.game_over_sprite, self.game_over_sprite_rect)
+
     def show_win_screen(self, score_system: ScoreSystem):
         """Show victory screen"""
         score_summary = score_system.get_score_summary()
@@ -267,68 +289,71 @@ class UI:
 
     def show_game_over_screen(self, score_system: ScoreSystem):
         """Show game over screen"""
-        score_summary = score_system.get_score_summary()
-
-        # Create result panel
-        panel_rect = pygame.Rect(
-            (self.config.SCREEN_WIDTH // 2 - 200, self.config.SCREEN_HEIGHT // 2 - 150),
-            (400, 280),
+        # Position sprite in center of screen
+        sprite_x = (
+            self.config.SCREEN_WIDTH // 2 - self.game_over_sprite.get_width() // 2
+        )
+        sprite_y = (
+            self.config.SCREEN_HEIGHT // 2 - self.game_over_sprite.get_height() // 2
+        )
+        self.game_over_sprite_rect = pygame.Rect(
+            sprite_x,
+            sprite_y,
+            self.game_over_sprite.get_width(),
+            self.game_over_sprite.get_height(),
         )
 
-        self.result_panel = pygame_gui.elements.UIPanel(
-            relative_rect=panel_rect, manager=self.ui_manager
-        )
+        # Position buttons from the bottom of the sprite
+        sprite_height = self.game_over_sprite.get_height()
+        button_y = (
+            sprite_y + sprite_height - 50 - 100 - 75 + 50 - 25
+        )  # Position from bottom of sprite, 100 + 75 higher, then 50 down, then 25 up
 
-        # Title
-        title_rect = pygame.Rect((0, 10), (400, 40))
-        self.game_over_text = pygame_gui.elements.UILabel(
-            relative_rect=title_rect,
-            text="GAME OVER",
-            manager=self.ui_manager,
-            container=self.result_panel,
-        )
-
-        # Reason
-        reason_rect = pygame.Rect((20, 60), (360, 30))
-        pygame_gui.elements.UILabel(
-            relative_rect=reason_rect,
-            text="You fell into the void!",
-            manager=self.ui_manager,
-            container=self.result_panel,
-        )
-
-        # Score details
-        y_offset = 100
-        details = [
-            f"Time: {score_summary['time']}",
-            f"Mask Uses: {score_summary['mask_uses']}",
-        ]
-
-        for detail in details:
-            detail_rect = pygame.Rect((20, y_offset), (360, 30))
-            pygame_gui.elements.UILabel(
-                relative_rect=detail_rect,
-                text=detail,
-                manager=self.ui_manager,
-                container=self.result_panel,
-            )
-            y_offset += 35
-
-        # Buttons
-        button_y = y_offset + 10
         self.restart_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((50, button_y), (130, 40)),
+            relative_rect=pygame.Rect(
+                (sprite_x + 50 + 100 + 50 + 25 - 10, button_y), (130, 40)
+            ),
             text="Try Again",
             manager=self.ui_manager,
-            container=self.result_panel,
         )
 
         self.restart_level_1_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((200, button_y), (150, 40)),
+            relative_rect=pygame.Rect(
+                (sprite_x + 250 + 300 - 50 + 20 - 10, button_y), (150, 40)
+            ),
             text="Restart",
             manager=self.ui_manager,
-            container=self.result_panel,
         )
+
+        # Make buttons transparent by overriding all appearance
+        def make_transparent(button):
+            if button:
+                # Create a fully transparent surface for the button background
+                transparent_bg = pygame.Surface(
+                    (button.rect.width, button.rect.height), pygame.SRCALPHA
+                )
+                transparent_bg.fill((0, 0, 0, 0))
+                button.set_image(transparent_bg)
+
+                # Override text color to white
+                button.text_colour = pygame.Color(255, 255, 255, 255)
+
+                # Disable the default button appearance completely
+                button.shape = "rectangle"
+                button.colours = button.colours.copy()
+                # Set all background colors to transparent
+                for key in button.colours:
+                    if "bg" in key:
+                        button.colours[key] = pygame.Color(0, 0, 0, 0)
+                    elif "border" in key:
+                        button.colours[key] = pygame.Color(0, 0, 0, 0)
+                    elif "text" in key:
+                        button.colours[key] = pygame.Color(255, 255, 255, 255)
+
+                button.rebuild()
+
+        make_transparent(self.restart_button)
+        make_transparent(self.restart_level_1_button)
 
     def hide_result_screen(self):
         """Hide result screen elements"""
@@ -337,9 +362,21 @@ class UI:
             self.result_panel = None
             self.win_text = None
             self.game_over_text = None
+
+        # Kill individual buttons
+        if self.restart_button:
+            self.restart_button.kill()
             self.restart_button = None
+        if self.restart_level_1_button:
+            self.restart_level_1_button.kill()
             self.restart_level_1_button = None
+        if self.editor_button:
+            self.editor_button.kill()
             self.editor_button = None
+
+        # Clean up sprite-related attributes
+        if hasattr(self, "game_over_sprite_rect"):
+            delattr(self, "game_over_sprite_rect")
 
     def cleanup(self):
         """Clean up all UI elements"""

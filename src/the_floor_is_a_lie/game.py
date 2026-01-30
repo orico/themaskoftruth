@@ -40,6 +40,13 @@ class Game:
         self.ui_manager = pygame_gui.UIManager(
             (self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT)
         )
+        # Load transparent button theme
+        try:
+            self.ui_manager.get_theme().load_theme_file(
+                "themes/transparent_buttons.json"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to load transparent button theme: {e}")
 
         # Game state
         self.game_state = "playing"  # menu, playing, game_over, level_editor
@@ -434,6 +441,10 @@ class Game:
 
         elif self.game_state == "level_editor":
             self.level_editor.render(self.screen)
+
+        elif self.game_state == "game_over":
+            # Render game over sprite
+            self.ui.render_game_over_sprite(self.screen)
 
         # Render UI manager (buttons, dialogs, etc.)
         self.ui_manager.draw_ui(self.screen)

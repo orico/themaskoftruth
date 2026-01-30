@@ -1,0 +1,26 @@
+{
+    "#transparent_button": {
+        "colours": {
+            "normal_bg": [0, 0, 0, 0],
+            "hovered_bg": [0, 0, 0, 0],
+            "disabled_bg": [0, 0, 0, 0],
+            "selected_bg": [0, 0, 0, 0],
+            "active_bg": [0, 0, 0, 0],
+            "normal_text": [255, 255, 255, 255],
+            "hovered_text": [255, 255, 255, 255],
+            "disabled_text": [255, 255, 255, 255],
+            "selected_text": [255, 255, 255, 255],
+            "active_text": [255, 255, 255, 255],
+            "normal_border": [0, 0, 0, 0],
+            "hovered_border": [0, 0, 0, 0],
+            "disabled_border": [0, 0, 0, 0],
+            "selected_border": [0, 0, 0, 0],
+            "active_border": [0, 0, 0, 0],
+            "normal_text_shadow": [0, 0, 0, 0],
+            "hovered_text_shadow": [0, 0, 0, 0],
+            "disabled_text_shadow": [0, 0, 0, 0],
+            "selected_text_shadow": [0, 0, 0, 0],
+            "active_text_shadow": [0, 0, 0, 0]
+        }
+    }
+}
