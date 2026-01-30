@@ -1,9 +1,11 @@
 """Tests for the Level module."""
 
-import pytest
 import json
-import tempfile
 import os
+import tempfile
+
+import pytest
+
 from src.the_floor_is_a_lie.config import Config
 from src.the_floor_is_a_lie.level import Level
 from src.the_floor_is_a_lie.tile import TileType
@@ -27,19 +29,16 @@ class TestLevel:
         # Create a temporary level file
         level_data = {
             "name": "Test Level",
-            "grid": [
-                ["start", "real", "fake"],
-                ["real", "empty", "exit"]
-            ],
+            "grid": [["start", "real", "fake"], ["real", "empty", "exit"]],
             "config": {
                 "mask_duration": 3.0,
                 "mask_cooldown": 4.0,
                 "time_thresholds": [20, 40, 80],
-                "mask_threshold": 3
-            }
+                "mask_threshold": 3,
+            },
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(level_data, f)
             temp_path = f.name
 
@@ -78,13 +77,26 @@ class TestLevel:
 
         # Create a simple grid
         from src.the_floor_is_a_lie.tile import Tile
+
         self.level.grid = [
-            [Tile(self.config, TileType.START, (0, 0)), Tile(self.config, TileType.REAL, (1, 0)), Tile(self.config, TileType.FAKE, (2, 0))],
-            [Tile(self.config, TileType.REAL, (0, 1)), Tile(self.config, TileType.EMPTY, (1, 1)), Tile(self.config, TileType.REAL, (2, 1))],
-            [Tile(self.config, TileType.FAKE, (0, 2)), Tile(self.config, TileType.REAL, (1, 2)), Tile(self.config, TileType.EXIT, (2, 2))]
+            [
+                Tile(self.config, TileType.START, (0, 0)),
+                Tile(self.config, TileType.REAL, (1, 0)),
+                Tile(self.config, TileType.FAKE, (2, 0)),
+            ],
+            [
+                Tile(self.config, TileType.REAL, (0, 1)),
+                Tile(self.config, TileType.EMPTY, (1, 1)),
+                Tile(self.config, TileType.REAL, (2, 1)),
+            ],
+            [
+                Tile(self.config, TileType.FAKE, (0, 2)),
+                Tile(self.config, TileType.REAL, (1, 2)),
+                Tile(self.config, TileType.EXIT, (2, 2)),
+            ],
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             temp_path = f.name
 
         try:
@@ -107,10 +119,7 @@ class TestLevel:
     def test_valid_position(self):
         """Test position validation."""
         # Create a small grid
-        self.level.grid = [
-            [None, None],
-            [None, None]
-        ]
+        self.level.grid = [[None, None], [None, None]]
 
         assert self.level.is_valid_position((0, 0))
         assert self.level.is_valid_position((1, 1))
@@ -129,10 +138,7 @@ class TestLevel:
         start_tile = Tile(self.config, TileType.START, (0, 1))
 
         # Set up level grid
-        self.level.grid = [
-            [real_tile, fake_tile, empty_tile],
-            [start_tile, None, None]
-        ]
+        self.level.grid = [[real_tile, fake_tile, empty_tile], [start_tile, None, None]]
 
         # Test walkability without mask
         assert self.level.is_walkable((0, 0), False)  # Real tile
@@ -155,9 +161,7 @@ class TestLevel:
         empty_tile = Tile(self.config, TileType.EMPTY, (2, 0))
 
         # Set up level grid
-        self.level.grid = [
-            [real_tile, fake_tile, empty_tile]
-        ]
+        self.level.grid = [[real_tile, fake_tile, empty_tile]]
 
         # Test safety without mask
         assert self.level.is_safe((0, 0), False)  # Real tile is safe
@@ -207,7 +211,7 @@ class TestLevel:
         self.level.mask_duration = 2.5
 
         info = self.level.get_level_info()
-        assert info['name'] == "Test Level"
-        assert info['start_pos'] == (1, 2)
-        assert info['exit_pos'] == (3, 4)
-        assert info['mask_duration'] == 2.5
+        assert info["name"] == "Test Level"
+        assert info["start_pos"] == (1, 2)
+        assert info["exit_pos"] == (3, 4)
+        assert info["mask_duration"] == 2.5

@@ -30,6 +30,11 @@ dependencies = [
     "pygame_gui==0.6.9",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+]
+
 [project.scripts]
 the-floor-is-a-lie = "src.the_floor_is_a_lie.main:main"
 

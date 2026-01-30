@@ -1,8 +1,9 @@
 """Tests for the Player module."""
 
-import pytest
-import pygame
 from unittest.mock import Mock, patch
+
+import pygame
+import pytest
 
 # Initialize pygame for testing
 pygame.init()
@@ -149,9 +150,17 @@ class TestPlayer:
         """Test getting mask status information."""
         status = self.player.get_mask_status()
 
-        expected_keys = ['active', 'timer', 'duration', 'recharge_timer', 'cooldown', 'available', 'uses']
+        expected_keys = [
+            "active",
+            "timer",
+            "duration",
+            "recharge_timer",
+            "cooldown",
+            "available",
+            "uses",
+        ]
         for key in expected_keys:
             assert key in status
 
-        assert status['active'] == self.player.mask_active
-        assert status['uses'] == self.player.mask_uses
+        assert status["active"] == self.player.mask_active
+        assert status["uses"] == self.player.mask_uses

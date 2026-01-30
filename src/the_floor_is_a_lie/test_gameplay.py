@@ -3,10 +3,11 @@
 Simple test script to verify core gameplay mechanics
 """
 
-from config import Config
-from player import Player
-from level import Level
-from score import ScoreSystem
+from .config import Config
+from .level import Level
+from .player import Player
+from .score import ScoreSystem
+
 
 def test_basic_gameplay():
     """Test basic gameplay mechanics"""
@@ -30,7 +31,7 @@ def test_basic_gameplay():
 
     # Simulate movement completion
     for _ in range(10):  # Simulate 10 frames
-        player.update(1.0/60)  # 60 FPS
+        player.update(1.0 / 60)  # 60 FPS
 
     new_pos = player.get_grid_position()
     if new_pos != (1, 0):
@@ -51,9 +52,11 @@ def test_basic_gameplay():
     # Simulate mask duration
     frames_needed = int(config.MASK_DURATION * 60) + 1  # Add 1 for safety
     for i in range(frames_needed):
-        player.update(1.0/60)
+        player.update(1.0 / 60)
         if i % 60 == 0:  # Print every second
-            print(f"  Frame {i}: mask_timer={player.mask_timer:.2f}, active={player.mask_active}")
+            print(
+                f"  Frame {i}: mask_timer={player.mask_timer:.2f}, active={player.mask_active}"
+            )
 
     mask_status = player.get_mask_status()
     if mask_status["active"]:
@@ -67,7 +70,7 @@ def test_basic_gameplay():
     # Move to a real tile (should be safe)
     player.move_to_grid(1, 0)
     for _ in range(10):
-        player.update(1.0/60)
+        player.update(1.0 / 60)
 
     is_safe = level.is_safe((1, 0), mask_active=False)
     if not is_safe:
@@ -77,7 +80,7 @@ def test_basic_gameplay():
     # Move to a fake tile without mask (should be dangerous)
     player.move_to_grid(0, 1)  # fake tile position
     for _ in range(10):
-        player.update(1.0/60)
+        player.update(1.0 / 60)
 
     is_safe = level.is_safe((0, 1), mask_active=False)
     if is_safe:
@@ -105,6 +108,7 @@ def test_basic_gameplay():
 
     print("🎉 All basic gameplay tests passed!")
     return True
+
 
 if __name__ == "__main__":
     test_basic_gameplay()

@@ -18,11 +18,15 @@ class Game:
         self.config = Config()
 
         # Set up display
-        self.screen = pygame.display.set_mode((self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode(
+            (self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT)
+        )
         pygame.display.set_caption("The Floor Is a Lie")
 
         # Initialize GUI manager
-        self.ui_manager = pygame_gui.UIManager((self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT))
+        self.ui_manager = pygame_gui.UIManager(
+            (self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT)
+        )
 
         # Game state
         self.game_state = "menu"  # menu, playing, game_over, level_editor
@@ -60,23 +64,133 @@ class Game:
         default_level = {
             "name": "Default Level",
             "grid": [
-                ["start", "real", "real", "real", "real", "real", "real", "real", "real", "exit"],
-                ["real", "fake", "fake", "fake", "real", "real", "fake", "fake", "fake", "real"],
-                ["real", "real", "fake", "real", "fake", "fake", "fake", "real", "real", "real"],
-                ["real", "real", "fake", "fake", "fake", "real", "real", "real", "fake", "fake"],
-                ["real", "fake", "real", "real", "real", "real", "fake", "fake", "fake", "real"],
-                ["real", "fake", "fake", "fake", "real", "real", "real", "real", "real", "real"],
-                ["real", "real", "real", "real", "real", "fake", "fake", "fake", "real", "real"],
-                ["fake", "fake", "fake", "real", "real", "real", "real", "real", "real", "fake"],
-                ["real", "real", "real", "real", "fake", "fake", "fake", "real", "real", "real"],
-                ["real", "fake", "fake", "fake", "real", "real", "real", "real", "fake", "real"]
+                [
+                    "start",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "exit",
+                ],
+                [
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                ],
+                [
+                    "real",
+                    "real",
+                    "fake",
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                ],
+                [
+                    "real",
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                    "fake",
+                    "fake",
+                ],
+                [
+                    "real",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                ],
+                [
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                ],
+                [
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                ],
+                [
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "fake",
+                ],
+                [
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                ],
+                [
+                    "real",
+                    "fake",
+                    "fake",
+                    "fake",
+                    "real",
+                    "real",
+                    "real",
+                    "real",
+                    "fake",
+                    "real",
+                ],
             ],
             "config": {
                 "mask_duration": 2.0,
                 "mask_cooldown": 3.0,
                 "time_thresholds": [30, 60, 120],
-                "mask_threshold": 5
-            }
+                "mask_threshold": 5,
+            },
         }
 
         with open("levels/level1.json", "w") as f:

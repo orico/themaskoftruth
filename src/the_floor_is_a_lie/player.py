@@ -4,9 +4,11 @@ Player module for The Floor Is a Lie
 Handles player movement, mask mechanics, and collision detection
 """
 
-import pygame
 from typing import Tuple
-from config import Config
+
+import pygame
+
+from .config import Config
 
 
 class Player:
@@ -52,7 +54,7 @@ class Player:
             dx = target_x - self.x
             dy = target_y - self.y
 
-            distance = (dx**2 + dy**2)**0.5
+            distance = (dx**2 + dy**2) ** 0.5
 
             if distance < 5:  # Close enough to target
                 self.x, self.y = target_x, target_y
@@ -108,23 +110,32 @@ class Player:
         if (new_grid_x, new_grid_y) != (self.grid_x, self.grid_y):
             # Import logging here to avoid circular imports
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.debug(f"Player moving to grid position: ({new_grid_x}, {new_grid_y})")
+            logger.debug(
+                f"Player moving to grid position: ({new_grid_x}, {new_grid_y})"
+            )
             self.move_to_grid(new_grid_x, new_grid_y)
 
     def move_to_grid(self, grid_x: int, grid_y: int):
         """Move player to specific grid position"""
         # Validate bounds
-        if 0 <= grid_x < self.config.GRID_WIDTH and 0 <= grid_y < self.config.GRID_HEIGHT:
+        if (
+            0 <= grid_x < self.config.GRID_WIDTH
+            and 0 <= grid_y < self.config.GRID_HEIGHT
+        ):
             self.target_grid_pos = (grid_x, grid_y)
             self.moving = True
 
     def toggle_mask(self):
         """Toggle mask on/off"""
         import logging
+
         logger = logging.getLogger(__name__)
 
-        logger.debug(f"Toggle mask called. Available: {self.mask_available}, Active: {self.mask_active}")
+        logger.debug(
+            f"Toggle mask called. Available: {self.mask_available}, Active: {self.mask_active}"
+        )
 
         if self.mask_available and not self.mask_active:
             logger.info("Activating mask")
@@ -182,14 +193,16 @@ class Player:
     def render(self, screen: pygame.Surface):
         """Render the player"""
         # Draw player as a circle
-        pygame.draw.circle(screen, self.color,
-                          (int(self.x), int(self.y)),
-                          self.size // 2)
+        pygame.draw.circle(
+            screen, self.color, (int(self.x), int(self.y)), self.size // 2
+        )
 
         # Draw mask indicator if active
         if self.mask_active:
             # Draw mask overlay effect
-            mask_surface = pygame.Surface((self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT), pygame.SRCALPHA)
+            mask_surface = pygame.Surface(
+                (self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT), pygame.SRCALPHA
+            )
             mask_surface.fill(self.config.MASK_OVERLAY_COLOR)
             screen.blit(mask_surface, (0, 0))
 
@@ -202,5 +215,5 @@ class Player:
             "recharge_timer": self.mask_recharge_timer,
             "cooldown": self.mask_cooldown,
             "available": self.mask_available,
-            "uses": self.mask_uses
+            "uses": self.mask_uses,
         }

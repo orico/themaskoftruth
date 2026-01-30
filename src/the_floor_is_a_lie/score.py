@@ -5,7 +5,8 @@ Handles time tracking, mask usage counting, and star calculation
 """
 
 from typing import List
-from config import Config
+
+from .config import Config
 
 
 class ScoreSystem:
@@ -23,7 +24,9 @@ class ScoreSystem:
         self.stars = 0
 
         # Configuration (can be updated from level)
-        self.time_thresholds: List[float] = config.TIME_THRESHOLDS.copy()  # seconds for 3, 2, 1 stars
+        self.time_thresholds: List[float] = (
+            config.TIME_THRESHOLDS.copy()
+        )  # seconds for 3, 2, 1 stars
         self.mask_threshold: int = config.MASK_USE_THRESHOLD  # max uses before penalty
 
     def update(self, delta_time: float):
@@ -75,7 +78,9 @@ class ScoreSystem:
         self.final_mask_uses = 0
         self.stars = 0
 
-    def set_config(self, time_thresholds: List[float] = None, mask_threshold: int = None):
+    def set_config(
+        self, time_thresholds: List[float] = None, mask_threshold: int = None
+    ):
         """Update scoring configuration"""
         if time_thresholds is not None:
             self.time_thresholds = time_thresholds.copy()
@@ -90,7 +95,7 @@ class ScoreSystem:
             "completed": self.completed,
             "final_time": self.final_time,
             "final_mask_uses": self.final_mask_uses,
-            "stars": self.stars
+            "stars": self.stars,
         }
 
     def get_time_formatted(self, time_seconds: float = None) -> str:
@@ -129,6 +134,8 @@ class ScoreSystem:
             "mask_uses": self.final_mask_uses,
             "stars": self.get_star_display(),
             "rating": self.get_performance_rating(),
-            "time_thresholds": [self.get_time_formatted(t) for t in self.time_thresholds],
-            "mask_threshold": self.mask_threshold
+            "time_thresholds": [
+                self.get_time_formatted(t) for t in self.time_thresholds
+            ],
+            "mask_threshold": self.mask_threshold,
         }

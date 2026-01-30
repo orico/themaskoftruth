@@ -5,12 +5,12 @@ __author__ = "Your Name"
 __email__ = "your.email@example.com"
 
 from .config import Config
-from .player import Player
-from .tile import Tile, TileType
 from .level import Level
-from .score import ScoreSystem
-from .ui import UI
 from .level_editor import LevelEditor
+from .player import Player
+from .score import ScoreSystem
+from .tile import Tile, TileType
+from .ui import UI
 
 __all__ = [
     "Config",

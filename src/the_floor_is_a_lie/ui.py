@@ -4,12 +4,14 @@ UI module for The Floor Is a Lie
 Handles user interface elements, timers, and result screens
 """
 
+from typing import Any, Dict
+
 import pygame
 import pygame_gui
-from typing import Dict, Any
-from config import Config
-from player import Player
-from score import ScoreSystem
+
+from .config import Config
+from .player import Player
+from .score import ScoreSystem
 
 
 class UI:
@@ -41,29 +43,31 @@ class UI:
         self.mask_timer_text = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((10, 10), (200, 30)),
             text="Mask: Ready",
-            manager=self.ui_manager
+            manager=self.ui_manager,
         )
 
         # Time display (top-right)
         self.time_text = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((self.config.SCREEN_WIDTH - 210, 10), (200, 30)),
             text="Time: 00:00",
-            manager=self.ui_manager
+            manager=self.ui_manager,
         )
 
         # Mask uses display (below mask timer)
         self.mask_uses_text = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((10, 40), (200, 30)),
             text="Uses: 0",
-            manager=self.ui_manager
+            manager=self.ui_manager,
         )
 
         # Instructions (bottom)
         instructions_text = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((10, self.config.SCREEN_HEIGHT - 60),
-                                    (self.config.SCREEN_WIDTH - 20, 50)),
+            relative_rect=pygame.Rect(
+                (10, self.config.SCREEN_HEIGHT - 60),
+                (self.config.SCREEN_WIDTH - 20, 50),
+            ),
             text="M: Toggle Mask | Arrow Keys: Move | Reach the yellow exit!",
-            manager=self.ui_manager
+            manager=self.ui_manager,
         )
 
     def render_game_ui(self, player: Player, score_system: ScoreSystem):
@@ -93,13 +97,13 @@ class UI:
         score_summary = score_system.get_score_summary()
 
         # Create result panel
-        panel_rect = pygame.Rect((self.config.SCREEN_WIDTH // 2 - 200,
-                                 self.config.SCREEN_HEIGHT // 2 - 150),
-                                (400, 300))
+        panel_rect = pygame.Rect(
+            (self.config.SCREEN_WIDTH // 2 - 200, self.config.SCREEN_HEIGHT // 2 - 150),
+            (400, 300),
+        )
 
         self.result_panel = pygame_gui.elements.UIPanel(
-            relative_rect=panel_rect,
-            manager=self.ui_manager
+            relative_rect=panel_rect, manager=self.ui_manager
         )
 
         # Title
@@ -108,7 +112,7 @@ class UI:
             relative_rect=title_rect,
             text="LEVEL COMPLETE!",
             manager=self.ui_manager,
-            container=self.result_panel
+            container=self.result_panel,
         )
 
         # Score details
@@ -117,7 +121,7 @@ class UI:
             f"Time: {score_summary['time']}",
             f"Mask Uses: {score_summary['mask_uses']}",
             f"Stars: {score_summary['stars']}",
-            f"Rating: {score_summary['rating']}"
+            f"Rating: {score_summary['rating']}",
         ]
 
         for detail in details:
@@ -126,7 +130,7 @@ class UI:
                 relative_rect=detail_rect,
                 text=detail,
                 manager=self.ui_manager,
-                container=self.result_panel
+                container=self.result_panel,
             )
             y_offset += 35
 
@@ -136,14 +140,14 @@ class UI:
             relative_rect=pygame.Rect((50, button_y), (120, 40)),
             text="Restart (R)",
             manager=self.ui_manager,
-            container=self.result_panel
+            container=self.result_panel,
         )
 
         self.editor_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((200, button_y), (150, 40)),
             text="Level Editor (E)",
             manager=self.ui_manager,
-            container=self.result_panel
+            container=self.result_panel,
         )
 
     def show_game_over_screen(self, score_system: ScoreSystem):
@@ -151,13 +155,13 @@ class UI:
         score_summary = score_system.get_score_summary()
 
         # Create result panel
-        panel_rect = pygame.Rect((self.config.SCREEN_WIDTH // 2 - 200,
-                                 self.config.SCREEN_HEIGHT // 2 - 150),
-                                (400, 250))
+        panel_rect = pygame.Rect(
+            (self.config.SCREEN_WIDTH // 2 - 200, self.config.SCREEN_HEIGHT // 2 - 150),
+            (400, 250),
+        )
 
         self.result_panel = pygame_gui.elements.UIPanel(
-            relative_rect=panel_rect,
-            manager=self.ui_manager
+            relative_rect=panel_rect, manager=self.ui_manager
         )
 
         # Title
@@ -166,7 +170,7 @@ class UI:
             relative_rect=title_rect,
             text="GAME OVER",
             manager=self.ui_manager,
-            container=self.result_panel
+            container=self.result_panel,
         )
 
         # Reason
@@ -175,14 +179,14 @@ class UI:
             relative_rect=reason_rect,
             text="You fell into the void!",
             manager=self.ui_manager,
-            container=self.result_panel
+            container=self.result_panel,
         )
 
         # Score details
         y_offset = 100
         details = [
             f"Time: {score_summary['time']}",
-            f"Mask Uses: {score_summary['mask_uses']}"
+            f"Mask Uses: {score_summary['mask_uses']}",
         ]
 
         for detail in details:
@@ -191,7 +195,7 @@ class UI:
                 relative_rect=detail_rect,
                 text=detail,
                 manager=self.ui_manager,
-                container=self.result_panel
+                container=self.result_panel,
             )
             y_offset += 35
 
@@ -200,7 +204,7 @@ class UI:
             relative_rect=pygame.Rect((140, y_offset), (120, 40)),
             text="Try Again (R)",
             manager=self.ui_manager,
-            container=self.result_panel
+            container=self.result_panel,
         )
 
     def hide_result_screen(self):

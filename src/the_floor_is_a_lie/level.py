@@ -5,10 +5,12 @@ Handles level loading, tile grid management, and level state
 """
 
 import json
+from typing import Any, Dict, List, Optional, Tuple
+
 import pygame
-from typing import List, Tuple, Optional, Dict, Any
-from config import Config
-from tile import Tile, TileType
+
+from .config import Config
+from .tile import Tile, TileType
 
 
 class Level:
@@ -33,14 +35,14 @@ class Level:
     def load_level(self, filename: str) -> bool:
         """Load level from JSON file"""
         try:
-            with open(filename, 'r') as f:
+            with open(filename, "r") as f:
                 level_data = json.load(f)
 
-            self.name = level_data.get('name', 'Unnamed Level')
-            self.level_config = level_data.get('config', {})
+            self.name = level_data.get("name", "Unnamed Level")
+            self.level_config = level_data.get("config", {})
 
             # Load grid
-            grid_data = level_data['grid']
+            grid_data = level_data["grid"]
             self._create_grid_from_data(grid_data)
 
             # Load configuration
@@ -73,10 +75,18 @@ class Level:
 
     def _load_config(self):
         """Load level-specific configuration"""
-        self.mask_duration = self.level_config.get('mask_duration', self.config.MASK_DURATION)
-        self.mask_cooldown = self.level_config.get('mask_cooldown', self.config.MASK_COOLDOWN)
-        self.time_thresholds = self.level_config.get('time_thresholds', self.config.TIME_THRESHOLDS.copy())
-        self.mask_threshold = self.level_config.get('mask_threshold', self.config.MASK_USE_THRESHOLD)
+        self.mask_duration = self.level_config.get(
+            "mask_duration", self.config.MASK_DURATION
+        )
+        self.mask_cooldown = self.level_config.get(
+            "mask_cooldown", self.config.MASK_COOLDOWN
+        )
+        self.time_thresholds = self.level_config.get(
+            "time_thresholds", self.config.TIME_THRESHOLDS.copy()
+        )
+        self.mask_threshold = self.level_config.get(
+            "mask_threshold", self.config.MASK_USE_THRESHOLD
+        )
 
     def save_level(self, filename: str) -> bool:
         """Save current level to JSON file"""
@@ -91,7 +101,7 @@ class Level:
                         TileType.REAL: "real",
                         TileType.FAKE: "fake",
                         TileType.START: "start",
-                        TileType.EXIT: "exit"
+                        TileType.EXIT: "exit",
                     }
                     row_data.append(tile_str_map[tile.type])
                 grid_data.append(row_data)
@@ -103,11 +113,11 @@ class Level:
                     "mask_duration": self.mask_duration,
                     "mask_cooldown": self.mask_cooldown,
                     "time_thresholds": self.time_thresholds,
-                    "mask_threshold": self.mask_threshold
-                }
+                    "mask_threshold": self.mask_threshold,
+                },
             }
 
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 json.dump(level_data, f, indent=2)
 
             return True
@@ -185,6 +195,7 @@ class Level:
     def render(self, screen: pygame.Surface, mask_active: bool = False):
         """Render the entire level"""
         import logging
+
         logger = logging.getLogger(__name__)
         logger.debug(f"Rendering level with mask_active={mask_active}")
 
@@ -202,7 +213,7 @@ class Level:
             "mask_duration": self.mask_duration,
             "mask_cooldown": self.mask_cooldown,
             "time_thresholds": self.time_thresholds,
-            "mask_threshold": self.mask_threshold
+            "mask_threshold": self.mask_threshold,
         }
 
     def reset(self):

@@ -1,12 +1,13 @@
 """Main entry point for The Floor Is a Lie game."""
 
-import sys
 import logging
+import sys
 
 # Set up logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("game_debug.log"), logging.StreamHandler()],
 )
 
 from .game import Game

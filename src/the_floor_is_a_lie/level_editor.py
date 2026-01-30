@@ -4,12 +4,14 @@ Level Editor module for The Floor Is a Lie
 Provides GUI for creating and editing levels
 """
 
+from typing import Optional
+
 import pygame
 import pygame_gui
-from typing import Optional
-from config import Config
-from level import Level
-from tile import TileType
+
+from .config import Config
+from .level import Level
+from .tile import TileType
 
 
 class LevelEditor:
@@ -37,12 +39,13 @@ class LevelEditor:
     def create_ui(self):
         """Create editor UI elements"""
         # Toolbar panel
-        toolbar_rect = pygame.Rect((self.config.SCREEN_WIDTH - self.config.EDITOR_TOOLBAR_WIDTH, 0),
-                                  (self.config.EDITOR_TOOLBAR_WIDTH, self.config.SCREEN_HEIGHT))
+        toolbar_rect = pygame.Rect(
+            (self.config.SCREEN_WIDTH - self.config.EDITOR_TOOLBAR_WIDTH, 0),
+            (self.config.EDITOR_TOOLBAR_WIDTH, self.config.SCREEN_HEIGHT),
+        )
 
         self.toolbar_panel = pygame_gui.elements.UIPanel(
-            relative_rect=toolbar_rect,
-            manager=self.ui_manager
+            relative_rect=toolbar_rect, manager=self.ui_manager
         )
 
         # Tile type buttons
@@ -51,18 +54,23 @@ class LevelEditor:
             ("Fake", TileType.FAKE),
             ("Empty", TileType.EMPTY),
             ("Start", TileType.START),
-            ("Exit", TileType.EXIT)
+            ("Exit", TileType.EXIT),
         ]
 
         y_offset = 10
         for name, tile_type in tile_types:
-            button_rect = pygame.Rect((10, y_offset), (self.config.EDITOR_TOOLBAR_WIDTH - 20,
-                                                     self.config.EDITOR_BUTTON_HEIGHT))
+            button_rect = pygame.Rect(
+                (10, y_offset),
+                (
+                    self.config.EDITOR_TOOLBAR_WIDTH - 20,
+                    self.config.EDITOR_BUTTON_HEIGHT,
+                ),
+            )
             button = pygame_gui.elements.UIButton(
                 relative_rect=button_rect,
                 text=name,
                 manager=self.ui_manager,
-                container=self.toolbar_panel
+                container=self.toolbar_panel,
             )
             self.tile_buttons[tile_type] = button
             y_offset += self.config.EDITOR_BUTTON_HEIGHT + 5
@@ -70,29 +78,44 @@ class LevelEditor:
         # Action buttons
         y_offset += 20
         self.save_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((10, y_offset), (self.config.EDITOR_TOOLBAR_WIDTH - 20,
-                                                     self.config.EDITOR_BUTTON_HEIGHT)),
+            relative_rect=pygame.Rect(
+                (10, y_offset),
+                (
+                    self.config.EDITOR_TOOLBAR_WIDTH - 20,
+                    self.config.EDITOR_BUTTON_HEIGHT,
+                ),
+            ),
             text="Save Level",
             manager=self.ui_manager,
-            container=self.toolbar_panel
+            container=self.toolbar_panel,
         )
 
         y_offset += self.config.EDITOR_BUTTON_HEIGHT + 5
         self.load_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((10, y_offset), (self.config.EDITOR_TOOLBAR_WIDTH - 20,
-                                                     self.config.EDITOR_BUTTON_HEIGHT)),
+            relative_rect=pygame.Rect(
+                (10, y_offset),
+                (
+                    self.config.EDITOR_TOOLBAR_WIDTH - 20,
+                    self.config.EDITOR_BUTTON_HEIGHT,
+                ),
+            ),
             text="Load Level",
             manager=self.ui_manager,
-            container=self.toolbar_panel
+            container=self.toolbar_panel,
         )
 
         y_offset += self.config.EDITOR_BUTTON_HEIGHT + 5
         self.back_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((10, y_offset), (self.config.EDITOR_TOOLBAR_WIDTH - 20,
-                                                     self.config.EDITOR_BUTTON_HEIGHT)),
+            relative_rect=pygame.Rect(
+                (10, y_offset),
+                (
+                    self.config.EDITOR_TOOLBAR_WIDTH - 20,
+                    self.config.EDITOR_BUTTON_HEIGHT,
+                ),
+            ),
             text="Back to Game",
             manager=self.ui_manager,
-            container=self.toolbar_panel
+            container=self.toolbar_panel,
         )
 
     def update(self, delta_time: float):
@@ -123,7 +146,9 @@ class LevelEditor:
                 self.load_level()
             elif event.ui_element == self.back_button:
                 # Back to game (handled in main loop)
-                pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE))
+                pygame.event.post(
+                    pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+                )
 
     def screen_to_grid(self, screen_pos):
         """Convert screen coordinates to grid coordinates"""
@@ -160,8 +185,12 @@ class LevelEditor:
 
         if grid_pos and self.level.is_valid_position(grid_pos):
             # Draw preview of tile to be placed
-            preview_color = self.level.get_tile(grid_pos).colors[self.selected_tile_type]
-            preview_surface = pygame.Surface((self.config.TILE_SIZE, self.config.TILE_SIZE))
+            preview_color = self.level.get_tile(grid_pos).colors[
+                self.selected_tile_type
+            ]
+            preview_surface = pygame.Surface(
+                (self.config.TILE_SIZE, self.config.TILE_SIZE)
+            )
             preview_surface.fill(preview_color)
             preview_surface.set_alpha(128)  # Semi-transparent
 

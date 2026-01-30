@@ -1,6 +1,7 @@
 """Tests for the Score module."""
 
 import pytest
+
 from src.the_floor_is_a_lie.config import Config
 from src.the_floor_is_a_lie.score import ScoreSystem
 
@@ -28,7 +29,9 @@ class TestScoreSystem:
         for _ in range(300):  # 5 seconds at 60 FPS
             self.score.update(1.0 / 60)
 
-        assert abs(self.score.elapsed_time - 5.0) < 0.1  # Allow small floating point error
+        assert (
+            abs(self.score.elapsed_time - 5.0) < 0.1
+        )  # Allow small floating point error
 
     def test_mask_usage_tracking(self):
         """Test mask usage counting."""
@@ -151,12 +154,12 @@ class TestScoreSystem:
 
         summary = self.score.get_score_summary()
 
-        assert summary['time'] == "00:45"
-        assert summary['mask_uses'] == 2
-        assert summary['stars'] == "★★★"
-        assert summary['rating'] == "Good!"
-        assert summary['time_thresholds'] == ["00:30", "01:00", "02:00"]
-        assert summary['mask_threshold'] == 5
+        assert summary["time"] == "00:45"
+        assert summary["mask_uses"] == 2
+        assert summary["stars"] == "★★★"
+        assert summary["rating"] == "Good!"
+        assert summary["time_thresholds"] == ["00:30", "01:00", "02:00"]
+        assert summary["mask_threshold"] == 5
 
     def test_reset(self):
         """Test score system reset."""
@@ -199,9 +202,9 @@ class TestScoreSystem:
 
         stats = self.score.get_current_stats()
 
-        assert stats['elapsed_time'] == 25.0
-        assert stats['mask_uses'] == 2
-        assert not stats['completed']
-        assert stats['final_time'] == 0.0
-        assert stats['final_mask_uses'] == 0
-        assert stats['stars'] == 0
+        assert stats["elapsed_time"] == 25.0
+        assert stats["mask_uses"] == 2
+        assert not stats["completed"]
+        assert stats["final_time"] == 0.0
+        assert stats["final_mask_uses"] == 0
+        assert stats["stars"] == 0

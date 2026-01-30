@@ -4,14 +4,17 @@ Tile module for The Floor Is a Lie
 Handles different tile types and their visual representation
 """
 
-import pygame
 from enum import Enum
 from typing import Tuple
-from config import Config
+
+import pygame
+
+from .config import Config
 
 
 class TileType(Enum):
     """Enumeration of tile types"""
+
     EMPTY = "empty"
     REAL = "real"
     FAKE = "fake"
@@ -35,7 +38,7 @@ class Tile:
             TileType.REAL: config.TILE_REAL_COLOR,
             TileType.FAKE: config.TILE_FAKE_COLOR,
             TileType.START: config.TILE_START_COLOR,
-            TileType.EXIT: config.TILE_EXIT_COLOR
+            TileType.EXIT: config.TILE_EXIT_COLOR,
         }
 
     def is_walkable(self, mask_active: bool = False) -> bool:
@@ -74,8 +77,9 @@ class Tile:
         color = self.get_display_color(mask_active)
 
         # Draw tile rectangle
-        rect = pygame.Rect(self.screen_x, self.screen_y,
-                          self.config.TILE_SIZE, self.config.TILE_SIZE)
+        rect = pygame.Rect(
+            self.screen_x, self.screen_y, self.config.TILE_SIZE, self.config.TILE_SIZE
+        )
         pygame.draw.rect(screen, color, rect)
 
         # Draw grid lines
@@ -100,7 +104,7 @@ class Tile:
             (center_x + size, center_y),
             (center_x - size, center_y),
             (center_x - size, center_y + size),
-            (center_x + size, center_y + size)
+            (center_x + size, center_y + size),
         ]
         pygame.draw.lines(screen, (255, 255, 255), False, points, 2)
 
@@ -115,7 +119,7 @@ class Tile:
             (center_x, center_y - size),
             (center_x + size, center_y),
             (center_x, center_y + size),
-            (center_x - size, center_y)
+            (center_x - size, center_y),
         ]
         pygame.draw.polygon(screen, (255, 255, 255), points, 2)
 
@@ -129,9 +133,9 @@ class Tile:
             "start": TileType.START,
             "exit": TileType.EXIT,
             ".": TileType.EMPTY,  # Alternative representation
-            "#": TileType.REAL,   # Alternative representation
-            "■": TileType.REAL,   # Unicode representation
-            "▫": TileType.FAKE,   # Unicode representation
+            "#": TileType.REAL,  # Alternative representation
+            "■": TileType.REAL,  # Unicode representation
+            "▫": TileType.FAKE,  # Unicode representation
         }
 
         tile_type = tile_type_map.get(tile_string.lower(), TileType.EMPTY)

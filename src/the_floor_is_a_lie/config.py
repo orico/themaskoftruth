@@ -17,13 +17,13 @@ class Config:
 
     # Colors
     BACKGROUND_COLOR = (20, 20, 30)
-    TILE_REAL_COLOR = (100, 150, 100)      # Green for real tiles
-    TILE_FAKE_COLOR = (150, 100, 100)      # Red for fake tiles (when visible)
-    TILE_EMPTY_COLOR = (50, 50, 70)        # Dark for empty tiles
-    TILE_START_COLOR = (100, 100, 200)     # Blue for start
-    TILE_EXIT_COLOR = (200, 200, 100)      # Yellow for exit
-    PLAYER_COLOR = (255, 255, 255)         # White player
-    MASK_OVERLAY_COLOR = (0, 0, 0, 128)    # Semi-transparent black
+    TILE_REAL_COLOR = (100, 150, 100)  # Green for real tiles
+    TILE_FAKE_COLOR = (150, 100, 100)  # Red for fake tiles (when visible)
+    TILE_EMPTY_COLOR = (50, 50, 70)  # Dark for empty tiles
+    TILE_START_COLOR = (100, 100, 200)  # Blue for start
+    TILE_EXIT_COLOR = (200, 200, 100)  # Yellow for exit
+    PLAYER_COLOR = (255, 255, 255)  # White player
+    MASK_OVERLAY_COLOR = (0, 0, 0, 128)  # Semi-transparent black
 
     # Tile settings
     TILE_SIZE = 40
@@ -35,8 +35,8 @@ class Config:
     PLAYER_SIZE = 32
 
     # Mask settings (default values, can be overridden by level)
-    MASK_DURATION = 2.0      # seconds mask stays active
-    MASK_COOLDOWN = 3.0      # seconds to recharge after use
+    MASK_DURATION = 2.0  # seconds mask stays active
+    MASK_COOLDOWN = 3.0  # seconds to recharge after use
 
     # Scoring settings (default values, can be overridden by level)
     TIME_THRESHOLDS = [30, 60, 120]  # seconds for 3, 2, 1 stars
@@ -58,7 +58,7 @@ class Config:
         size_map = {
             "small": cls.FONT_SIZE_SMALL,
             "medium": cls.FONT_SIZE_MEDIUM,
-            "large": cls.FONT_SIZE_LARGE
+            "large": cls.FONT_SIZE_LARGE,
         }
         return pygame.font.Font(None, size_map.get(size, cls.FONT_SIZE_MEDIUM))
 
