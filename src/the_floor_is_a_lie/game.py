@@ -12,7 +12,7 @@ from .level import Level
 from .level_editor import LevelEditor
 from .player import Player
 from .score import ScoreSystem
-from .ui import UI
+from .ui import RESTART_GAME_EVENT, UI
 
 logger = logging.getLogger(__name__)
 
@@ -237,6 +237,15 @@ class Game:
                     self.handle_game_events(event)
                 elif self.game_state == "level_editor":
                     self.handle_editor_events(event)
+                elif self.game_state == "game_over":
+                    # Handle restart events in game over state
+                    if (
+                        event.type == pygame.KEYDOWN and event.key == pygame.K_r
+                    ) or event.type == RESTART_GAME_EVENT:
+                        logger.info(
+                            "Restart triggered during game over - restarting game"
+                        )
+                        self.restart_game()
 
             # Update game state
             if self.game_state == "playing":
@@ -263,7 +272,7 @@ class Game:
                 self.player.toggle_mask()
                 mask_status = self.player.get_mask_status()
                 logger.info(f"Mask status after toggle: active={mask_status['active']}")
-            elif event.key == pygame.K_r and self.game_state == "game_over":
+            elif event.key == pygame.K_r:
                 logger.info("R key pressed - restarting game")
                 self.restart_game()
             elif event.key == pygame.K_e:
@@ -272,7 +281,7 @@ class Game:
 
         # Handle movement input
         keys = pygame.key.get_pressed()
-        self.player.handle_input(keys)
+        self.player.handle_input(keys, self.level)
 
     def handle_editor_events(self, event):
         """Handle events in level editor."""
@@ -304,9 +313,9 @@ class Game:
             logger.warning("Player fell on empty tile - game over!")
             self.game_over()
 
-        # Check if player stepped on fake tile while mask is off
-        elif not self.player.mask_active and self.level.is_fake_tile(player_pos):
-            logger.warning("Player stepped on fake tile without mask - game over!")
+        # Check if player stepped on fake tile (always dangerous)
+        elif self.level.is_fake_tile(player_pos):
+            logger.warning("Player stepped on fake tile - game over!")
             self.game_over()
 
     def game_win(self):
@@ -323,6 +332,9 @@ class Game:
     def restart_game(self):
         """Restart the current level."""
         logger.info("Restarting game")
+        # Hide result screen before reinitializing
+        if self.ui:
+            self.ui.hide_result_screen()
         self.initialize_game()
         self.game_state = "playing"
 

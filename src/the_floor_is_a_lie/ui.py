@@ -13,6 +13,9 @@ from .config import Config
 from .player import Player
 from .score import ScoreSystem
 
+# Custom events
+RESTART_GAME_EVENT = pygame.USEREVENT + 1
+
 
 class UI:
     """User Interface management class"""
@@ -61,7 +64,8 @@ class UI:
         )
 
         # Instructions (bottom)
-        instructions_text = pygame_gui.elements.UILabel(
+        # Note: not stored as we don't need to update it
+        pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(
                 (10, self.config.SCREEN_HEIGHT - 60),
                 (self.config.SCREEN_WIDTH - 20, 50),
@@ -77,20 +81,20 @@ class UI:
 
         # Update mask timer display
         if mask_status["active"]:
-            timer_text = f"Mask: {mask_status['timer']:.1f}s"
-            self.mask_timer_text.set_text(timer_text)
+            timer_text = f"Mask: Active ({mask_status['timer']:.1f}s)"
         elif not mask_status["available"]:
-            recharge_text = f"Recharge: {mask_status['recharge_timer']:.1f}s"
-            self.mask_timer_text.set_text(recharge_text)
+            timer_text = f"Mask: Loading ({mask_status['recharge_timer']:.1f}s)"
         else:
-            self.mask_timer_text.set_text("Mask: Ready")
+            timer_text = "Mask: Ready"
+
+        self.mask_timer_text.set_text(timer_text)
 
         # Update time display
         time_str = score_system.get_time_formatted()
         self.time_text.set_text(f"Time: {time_str}")
 
         # Update mask uses
-        self.mask_uses_text.set_text(f"Uses: {stats['mask_uses']}")
+        self.mask_uses_text.set_text(f"Mask Uses: {stats['mask_uses']}")
 
     def show_win_screen(self, score_system: ScoreSystem):
         """Show victory screen"""
@@ -220,12 +224,15 @@ class UI:
     def handle_ui_events(self, event):
         """Handle UI-specific events"""
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.restart_button:
-                # Trigger restart (handled in main game loop)
-                pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_r))
-            elif event.ui_element == self.editor_button:
-                # Trigger level editor (handled in main game loop)
-                pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_e))
+            if hasattr(event, "ui_element"):
+                if self.restart_button and event.ui_element == self.restart_button:
+                    # Trigger restart (handled in main game loop)
+                    pygame.event.post(pygame.event.Event(RESTART_GAME_EVENT))
+                elif self.editor_button and event.ui_element == self.editor_button:
+                    # Trigger level editor (handled in main game loop)
+                    pygame.event.post(
+                        pygame.event.Event(pygame.KEYDOWN, key=pygame.K_e)
+                    )
 
     def update_from_level_config(self, level_config: Dict[str, Any]):
         """Update UI elements based on level configuration"""
