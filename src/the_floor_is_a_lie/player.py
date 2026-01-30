@@ -530,8 +530,7 @@ class Player:
             flip_x=not self.facing_right
         )
 
-        # Calculate scaling for current animation to fit within PLAYER_SIZE
-        # while maintaining aspect ratio
+        # Scale current animation to fit PLAYER_SIZE maintaining aspect ratio
         frame_width = self.current_animation.frame_width
         frame_height = self.current_animation.frame_height
         scale_factor = min(self.size / frame_width, self.size / frame_height)
