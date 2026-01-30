@@ -16,8 +16,6 @@ class SoundEffects:
         """Initialize sound effects manager."""
         self.sounds: Dict[str, pygame.mixer.Sound] = {}
         self.volume = 0.7  # Default volume for sound effects
-        self.saved_volume = self.volume  # Remember volume before muting
-        self.muted = False
 
         # Initialize pygame mixer if not already initialized
         if not pygame.mixer.get_init():
@@ -36,11 +34,7 @@ class SoundEffects:
         try:
             if os.path.exists(sound_file):
                 self.sounds[sound_id] = pygame.mixer.Sound(sound_file)
-                # Set volume based on mute state
-                if self.muted:
-                    self.sounds[sound_id].set_volume(0.0)
-                else:
-                    self.sounds[sound_id].set_volume(self.volume)
+                self.sounds[sound_id].set_volume(self.volume)
                 logger.info(f"Loaded sound effect '{sound_id}': {sound_file}")
                 return True
             else:
@@ -78,38 +72,9 @@ class SoundEffects:
             volume: Volume level (0.0 to 1.0)
         """
         self.volume = max(0.0, min(1.0, volume))  # Clamp to valid range
-        if not self.muted:
-            for sound in self.sounds.values():
-                sound.set_volume(self.volume)
-            self.saved_volume = self.volume  # Update saved volume while not muted
-        else:
-            self.saved_volume = self.volume  # Update saved volume while muted
+        for sound in self.sounds.values():
+            sound.set_volume(self.volume)
         logger.debug(f"Set sound effects volume to {self.volume}")
-
-    def toggle_mute(self) -> None:
-        """Toggle mute on/off for sound effects."""
-        if self.muted:
-            self.unmute()
-        else:
-            self.mute()
-
-    def mute(self) -> None:
-        """Mute all sound effects."""
-        if not self.muted:
-            self.saved_volume = self.volume
-            for sound in self.sounds.values():
-                sound.set_volume(0.0)
-            self.muted = True
-            logger.info("Muted sound effects")
-
-    def unmute(self) -> None:
-        """Unmute sound effects."""
-        if self.muted:
-            for sound in self.sounds.values():
-                sound.set_volume(self.saved_volume)
-            self.volume = self.saved_volume
-            self.muted = False
-            logger.info("Unmuted sound effects")
 
     def stop_all_sounds(self) -> None:
         """Stop all currently playing sound effects."""

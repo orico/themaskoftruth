@@ -19,6 +19,8 @@ class AnimationState(Enum):
     TRANSITIONING_TO_RUN = "transitioning_to_run"
     RUNNING = "running"
     TRANSITIONING_TO_IDLE = "transitioning_to_idle"
+    MASK_ACTIVATING = "mask_activating"
+    MASK_DEACTIVATING = "mask_deactivating"
 
 
 class Animation:
@@ -232,21 +234,21 @@ class Player:
             loop=True,
         )
 
+        # Create mask activation/deactivation animation
+        # Assuming 4x4 grid (16 frames) for the mask sprite sheet
+        mask_frame_indices = list(range(16))  # Use all 16 frames sequentially
+        self.mask_animation = Animation(
+            "sprites/A-2D-side-scroller-character-sprite-sheet-featurin-256px-16.png",
+            rows=4,
+            cols=4,
+            frame_indices=mask_frame_indices,
+            frame_duration=0.1,  # Smooth mask animation
+            loop=False,  # Play once, can be reversed
+        )
+
         # Start with idle animation
         self.current_animation = self.idle_animation
         self.current_animation.play()
-
-        # Calculate scaling to fit within PLAYER_SIZE while maintaining aspect ratio
-        # Use idle animation for scaling calculation
-        # (all animations have same frame size)
-        frame_width = self.idle_animation.frame_width
-        frame_height = self.idle_animation.frame_height
-        scale_factor = min(self.size / frame_width, self.size / frame_height)
-        self.sprite_scale = scale_factor
-        self.sprite_size = (
-            int(frame_width * scale_factor),
-            int(frame_height * scale_factor),
-        )
 
     def update(self, delta_time: float):
         """Update player state"""
@@ -255,6 +257,23 @@ class Player:
 
     def update_movement(self, delta_time: float):
         """Update player movement and animation state machine"""
+
+        # Handle mask animation transitions
+        if self.animation_state == AnimationState.MASK_ACTIVATING:
+            # Playing mask activation animation
+            if self.current_animation.is_completed():
+                # Mask activation complete - return to idle
+                self.animation_state = AnimationState.IDLE
+                self.current_animation = self.idle_animation
+                self.current_animation.play()
+
+        elif self.animation_state == AnimationState.MASK_DEACTIVATING:
+            # Playing mask deactivation animation (in reverse)
+            if self.current_animation.is_completed():
+                # Mask deactivation complete - return to idle
+                self.animation_state = AnimationState.IDLE
+                self.current_animation = self.idle_animation
+                self.current_animation.play()
 
         # Handle movement physics
         if self.target_grid_pos:
@@ -446,12 +465,24 @@ class Player:
         self.mask_timer = self.mask_duration
         self.mask_uses += 1
 
+        # Trigger mask activation animation if currently idle
+        if self.animation_state == AnimationState.IDLE:
+            self.animation_state = AnimationState.MASK_ACTIVATING
+            self.current_animation = self.mask_animation
+            self.current_animation.play()
+
     def deactivate_mask(self):
         """Deactivate the mask and start recharge"""
         self.mask_active = False
         self.mask_timer = 0
         self.mask_available = False
         self.mask_recharge_timer = self.mask_cooldown
+
+        # Trigger mask deactivation animation (in reverse) if currently idle
+        if self.animation_state == AnimationState.IDLE:
+            self.animation_state = AnimationState.MASK_DEACTIVATING
+            self.current_animation = self.mask_animation
+            self.current_animation.play(reverse=True)
 
     def get_grid_position(self) -> Tuple[int, int]:
         """Get current grid position"""
@@ -499,9 +530,18 @@ class Player:
             flip_x=not self.facing_right
         )
 
-        # Scale the frame to fit within PLAYER_SIZE while maintaining aspect ratio
-        if self.sprite_scale != 1.0:
-            scaled_frame = pygame.transform.scale(current_frame, self.sprite_size)
+        # Calculate scaling for current animation to fit within PLAYER_SIZE
+        # while maintaining aspect ratio
+        frame_width = self.current_animation.frame_width
+        frame_height = self.current_animation.frame_height
+        scale_factor = min(self.size / frame_width, self.size / frame_height)
+
+        if scale_factor != 1.0:
+            scaled_size = (
+                int(frame_width * scale_factor),
+                int(frame_height * scale_factor),
+            )
+            scaled_frame = pygame.transform.scale(current_frame, scaled_size)
         else:
             scaled_frame = current_frame
 
