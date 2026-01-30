@@ -106,6 +106,10 @@ class Player:
 
         # Only move if position changed
         if (new_grid_x, new_grid_y) != (self.grid_x, self.grid_y):
+            # Import logging here to avoid circular imports
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug(f"Player moving to grid position: ({new_grid_x}, {new_grid_y})")
             self.move_to_grid(new_grid_x, new_grid_y)
 
     def move_to_grid(self, grid_x: int, grid_y: int):
@@ -117,10 +121,19 @@ class Player:
 
     def toggle_mask(self):
         """Toggle mask on/off"""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.debug(f"Toggle mask called. Available: {self.mask_available}, Active: {self.mask_active}")
+
         if self.mask_available and not self.mask_active:
+            logger.info("Activating mask")
             self.activate_mask()
         elif self.mask_active:
+            logger.info("Deactivating mask")
             self.deactivate_mask()
+        else:
+            logger.warning("Mask toggle called but mask is not available")
 
     def activate_mask(self):
         """Activate the mask"""

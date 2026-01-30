@@ -184,6 +184,10 @@ class Level:
 
     def render(self, screen: pygame.Surface, mask_active: bool = False):
         """Render the entire level"""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug(f"Rendering level with mask_active={mask_active}")
+
         for row in self.grid:
             for tile in row:
                 tile.render(screen, mask_active)

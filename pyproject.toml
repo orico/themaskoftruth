@@ -31,16 +31,15 @@ dependencies = [
 ]
 
 [project.scripts]
-the-floor-is-a-lie = "main:main"
+the-floor-is-a-lie = "src.the_floor_is_a_lie.main:main"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/the-floor-is-a-lie"
 Repository = "https://github.com/yourusername/the-floor-is-a-lie"
 Issues = "https://github.com/yourusername/the-floor-is-a-lie/issues"
 
-[tool.setuptools]
-packages = ["."]
-package-dir = {"" = "."}
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools.package-data]
-"" = ["levels/*.json"]
+"*" = ["levels/*.json"]

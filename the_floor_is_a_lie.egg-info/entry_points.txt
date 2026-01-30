@@ -1,0 +1,2 @@
+[console_scripts]
+the-floor-is-a-lie = main:main

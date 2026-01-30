@@ -1,140 +1,152 @@
 # The Floor Is a Lie
 
-![Game Screenshot](screenshot.png)
+A top-down memory puzzle game where the floor visually lies to you. Navigate through deceptive tiles using a mask that briefly reveals the truth.
 
-A challenging top-down memory puzzle game built with Python and Pygame. Navigate through deceptive tile mazes where some floors are real and others are illusions that will make you fall. Use your memory and timing to reach the exit!
+## 🎮 Gameplay
 
-## 🎮 Features
-
-- **Memory-based gameplay**: Remember tile patterns and use a mask to reveal hidden dangers
-- **Dynamic tile system**: Real tiles are safe, fake tiles cause you to fall
-- **Mask mechanics**: Temporarily reveal all tiles but with a cooldown period
-- **Time-based scoring**: Complete levels faster for higher scores
-- **Built-in level editor**: Create and modify your own levels
-- **Save/load system**: Persist your custom levels
-- **Intuitive controls**: Simple keyboard controls for easy gameplay
-
-## 🚀 Installation
-
-### Prerequisites
-- Python 3.8 or higher
-- pip (Python package installer)
-
-### Install from source
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/the-floor-is-a-lie.git
-cd the-floor-is-a-lie
-
-# Install dependencies
-pip install -e .
-```
-
-### Alternative: Install dependencies manually
-```bash
-pip install pygame==2.5.2 pygame_gui==0.6.9
-```
-
-## 🎯 How to Play
+### Core Mechanics
+- **Movement**: Use arrow keys or WASD to move in 4 directions
+- **Mask Mechanic**: Press `M` to toggle your mask
+  - Mask reveals the true floor layout for a limited time (default: 2 seconds)
+  - After use, mask recharges for 3 seconds
+- **Tiles**:
+  - 🟢 **Real tiles**: Always safe (green when mask is on)
+  - 🔴 **Fake tiles**: Appear safe when masked, dangerous when unmasked (red when mask is on)
+  - ⚫ **Empty tiles**: Always dangerous - falling hazard
+  - 🔵 **Start**: Your starting position
+  - 🟡 **Exit**: Goal to reach
 
 ### Objective
-Navigate from the start tile (green) to the exit tile (red) without falling through fake tiles (invisible holes).
+Navigate from the start tile to the exit tile without falling into empty spaces or stepping on fake tiles while your mask is off.
 
-### Controls
-- **Arrow Keys / WASD**: Move your character
-- **M**: Toggle mask (reveals all tiles temporarily)
-- **R**: Restart level (when game over)
-- **E**: Enter level editor
-- **ESC**: Exit level editor
-
-### Gameplay Mechanics
-
-1. **Tiles**:
-   - **Start** (Green): Where you begin
-   - **Exit** (Red): Your goal
-   - **Real** (Gray): Safe tiles
-   - **Fake** (Invisible): Dangerous tiles that make you fall
-
-2. **Mask System**:
-   - Press **M** to activate your mask and reveal all tiles
-   - The mask has a limited duration and cooldown
-   - Use it strategically to memorize tile patterns
-
-3. **Scoring**:
-   - Complete levels faster for higher scores
-   - Bonus points for efficient mask usage
+### Scoring
+- **Stars** (3 max): Based on completion time thresholds
+- **Penalty**: Lose 1 star if you use the mask more than the threshold (default: 5 uses)
+- **Time thresholds**: 30s (★★★), 60s (★★), 120s (★)
 
 ## 🛠️ Level Editor
 
-Create and modify your own levels with the built-in editor:
+Press `E` during gameplay to access the level editor:
 
-1. Press **E** during gameplay to enter the editor
-2. **Left Click**: Place tiles
-3. **Right Click**: Remove tiles
-4. **Tile Types**:
-   - **S**: Start position
-   - **E**: Exit position
-   - **R**: Real tile
-   - **F**: Fake tile
-5. Press **ESC** to save and exit
+### Features
+- **Tile Placement**: Click tiles to cycle through types (Real, Fake, Empty, Start, Exit)
+- **Visual Feedback**: Hover preview shows what tile will be placed
+- **Save/Load**: Save your creations to JSON files
+- **Back to Game**: Return to gameplay with your changes
 
-Levels are saved as JSON files in the `levels/` directory.
+### Controls
+- **Mouse**: Left-click to place selected tile type
+- **Toolbar**: Select tile type from right panel buttons
+- **Save**: Save current level to file
+- **ESC**: Return to game
 
-## 🏗️ Development
+## 🏗️ Technical Architecture
 
-### Project Structure
-```
-the-floor-is-a-lie/
-├── main.py              # Main game entry point
-├── config.py            # Game configuration
-├── player.py            # Player character logic
-├── level.py             # Level loading and rendering
-├── tile.py              # Tile system
-├── score.py             # Scoring system
-├── ui.py                # User interface
-├── level_editor.py      # Built-in level editor
-├── levels/              # Level files
-│   └── level1.json
-├── pyproject.toml       # Project configuration
-└── README.md           # This file
-```
+### Modular Design
+- **Player Module**: Movement, mask mechanics, position tracking
+- **Tile Module**: Tile types, visual representation, collision logic
+- **Level Module**: JSON loading, grid management, level state
+- **Score Module**: Time tracking, star calculation, performance metrics
+- **UI Module**: HUD elements, result screens, user interface
+- **Level Editor Module**: Tile placement, level creation tools
 
-### Running in Development Mode
+### Configuration
+All game parameters are configurable via JSON:
+- Mask duration and cooldown times
+- Scoring thresholds and penalties
+- Tile sizes and grid dimensions
+- UI colors and layout
+
+## 🚀 Installation & Running
+
+### Prerequisites
+- Python 3.8+
+- Virtual environment (recommended)
+
+### Setup
 ```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the game
 python main.py
 ```
 
-### Building a Distribution
-```bash
-# Build wheel
-python -m build
+### Controls
+- **Arrow Keys / WASD**: Move player
+- **M**: Toggle mask
+- **R**: Restart level (on game over/win)
+- **E**: Enter level editor (during gameplay)
+- **ESC**: Exit level editor
 
-# Install locally for testing
-pip install -e .
+## 📁 Project Structure
+
+```
+thetruthmask/
+├── main.py              # Main game loop and state management
+├── config.py            # Game configuration and constants
+├── player.py            # Player movement and mask mechanics
+├── tile.py              # Tile types and rendering
+├── level.py             # Level loading and grid management
+├── score.py             # Scoring and statistics
+├── ui.py                # User interface elements
+├── level_editor.py      # Level creation tools
+├── test_gameplay.py     # Gameplay verification tests
+├── requirements.txt     # Python dependencies
+├── levels/              # Level files directory
+│   └── level1.json     # Sample level
+└── README.md           # This file
 ```
 
-## 🤝 Contributing
+## 🎯 Features Implemented
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+✅ **Core Gameplay**
+- Top-down grid-based movement
+- Mask toggle with timer and recharge
+- Three tile types with proper collision
+- Win/lose conditions
 
-## 📝 License
+✅ **Scoring System**
+- Time-based star ratings
+- Mask usage penalty
+- Completion statistics
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+✅ **Level Editor**
+- Tile placement interface
+- Level saving/loading
+- Visual feedback
 
-## 🙏 Acknowledgments
+✅ **UI/UX**
+- Real-time HUD (mask timer, time, uses)
+- Result screens with star ratings
+- Clean, readable interface
 
-- Built with [Pygame](https://www.pygame.org/) and [Pygame GUI](https://pygame-gui.readthedocs.io/)
-- Inspired by memory-based puzzle games
-- Thanks to the open-source gaming community
+✅ **Technical**
+- Modular architecture
+- JSON-based level configuration
+- Configurable parameters
+- Comprehensive testing
 
-## 🎮 Screenshots
+## 🔮 Future Expansions
 
-*[Add screenshots here when available]*
+- Multiple levels with increasing difficulty
+- Moving hazards and enemies
+- Power-ups and special abilities
+- Level packs and sharing
+- Sound effects and music
+- Advanced level editor features
+- Performance statistics and leaderboards
+
+## 🎨 Game Design Notes
+
+The core tension comes from the memory puzzle: players must memorize safe paths during brief mask activations, then navigate blindly while the deceptive floor tries to lead them astray. The mask mechanic creates a rhythm of "peek, memorize, execute" that rewards strategic thinking and spatial memory.
 
 ---
 
-**Enjoy the game! Remember, the floor is a lie... 🕳️**
+**Enjoy the deception!** 🕵️‍♂️

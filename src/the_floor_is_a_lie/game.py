@@ -1,17 +1,26 @@
-#!/usr/bin/env python3
-"""
-The Floor Is a Lie - Top-Down Memory Puzzle Game
-Main entry point that delegates to the game package
-"""
+"""Main game class for The Floor Is a Lie."""
 
-from src.the_floor_is_a_lie.main import main
+import pygame
+import pygame_gui
+import sys
+import logging
+from typing import Optional
 
-if __name__ == "__main__":
-    main()
+from .config import Config
+from .player import Player
+from .level import Level
+from .score import ScoreSystem
+from .ui import UI
+from .level_editor import LevelEditor
+
+logger = logging.getLogger(__name__)
 
 
 class Game:
+    """Main game class that orchestrates all modules."""
+
     def __init__(self):
+        logger.info("Initializing game...")
         pygame.init()
 
         # Load configuration
@@ -37,9 +46,11 @@ class Game:
 
         # Initialize game
         self.initialize_game()
+        logger.info("Game initialized successfully")
 
     def initialize_game(self):
-        """Initialize or reset game modules"""
+        """Initialize or reset game modules."""
+        logger.debug("Initializing game modules...")
         self.level = Level(self.config)
         self.player = Player(self.config, self.level.start_pos)
         self.score_system = ScoreSystem(self.config)
@@ -47,11 +58,13 @@ class Game:
 
         # Load first level
         if not self.level.load_level("levels/level1.json"):
-            print("Failed to load level, creating default level...")
+            logger.warning("Failed to load level, creating default level...")
             self.create_default_level()
 
+        logger.debug("Game modules initialized")
+
     def create_default_level(self):
-        """Create a basic default level if none exists"""
+        """Create a basic default level if none exists."""
         import json
         import os
 
@@ -85,7 +98,8 @@ class Game:
         self.level.load_level("levels/level1.json")
 
     def run(self):
-        """Main game loop"""
+        """Main game loop."""
+        logger.info("Starting main game loop")
         running = True
 
         while running:
@@ -94,6 +108,7 @@ class Game:
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    logger.info("Quit event received")
                     running = False
 
                 # Handle UI events
@@ -120,11 +135,12 @@ class Game:
             # Render
             self.render()
 
+        logger.info("Game loop ended")
         pygame.quit()
         sys.exit()
 
     def handle_game_events(self, event):
-        """Handle events during gameplay"""
+        """Handle events during gameplay."""
         if event.type == pygame.KEYDOWN:
             logger.debug(f"Key pressed: {pygame.key.name(event.key)}")
             if event.key == pygame.K_m:
@@ -133,8 +149,10 @@ class Game:
                 mask_status = self.player.get_mask_status()
                 logger.info(f"Mask status after toggle: active={mask_status['active']}")
             elif event.key == pygame.K_r and self.game_state == "game_over":
+                logger.info("R key pressed - restarting game")
                 self.restart_game()
             elif event.key == pygame.K_e:
+                logger.info("E key pressed - entering level editor")
                 self.enter_level_editor()
 
         # Handle movement input
@@ -142,15 +160,16 @@ class Game:
         self.player.handle_input(keys)
 
     def handle_editor_events(self, event):
-        """Handle events in level editor"""
+        """Handle events in level editor."""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
+                logger.info("ESC key pressed - exiting level editor")
                 self.exit_level_editor()
 
         self.level_editor.handle_events(event)
 
     def update_playing(self, delta_time):
-        """Update game logic during play"""
+        """Update game logic during play."""
         # Update player
         self.player.update(delta_time)
 
@@ -162,41 +181,45 @@ class Game:
 
         # Check if player reached exit
         if self.level.is_exit_tile(player_pos):
+            logger.info("Player reached exit - game won!")
             self.game_win()
 
         # Check if player fell (on empty tile)
         elif self.level.is_empty_tile(player_pos):
+            logger.warning("Player fell on empty tile - game over!")
             self.game_over()
 
         # Check if player stepped on fake tile while mask is off
         elif not self.player.mask_active and self.level.is_fake_tile(player_pos):
+            logger.warning("Player stepped on fake tile without mask - game over!")
             self.game_over()
 
     def game_win(self):
-        """Handle game win condition"""
+        """Handle game win condition."""
         self.score_system.complete_level()
         self.ui.show_win_screen(self.score_system)
         self.game_state = "game_over"
 
     def game_over(self):
-        """Handle game over condition"""
+        """Handle game over condition."""
         self.ui.show_game_over_screen(self.score_system)
         self.game_state = "game_over"
 
     def restart_game(self):
-        """Restart the current level"""
+        """Restart the current level."""
+        logger.info("Restarting game")
         self.initialize_game()
         self.game_state = "playing"
 
     def enter_level_editor(self):
-        """Switch to level editor mode"""
+        """Switch to level editor mode."""
         if self.level_editor is None:
             self.level_editor = LevelEditor(self.config, self.ui_manager, self.level)
 
         self.game_state = "level_editor"
 
     def exit_level_editor(self):
-        """Exit level editor and return to game"""
+        """Exit level editor and return to game."""
         # Clean up level editor
         if self.level_editor:
             self.level_editor.cleanup()
@@ -204,10 +227,11 @@ class Game:
         self.game_state = "playing"
         # Reload level if it was modified
         if self.level_editor and self.level_editor.modified:
+            logger.info("Level was modified, reloading...")
             self.initialize_game()
 
     def render(self):
-        """Render the current game state"""
+        """Render the current game state."""
         logger.debug(f"Rendering game state: {self.game_state}")
         self.screen.fill(self.config.BACKGROUND_COLOR)
 
@@ -235,13 +259,3 @@ class Game:
         self.ui_manager.draw_ui(self.screen)
 
         pygame.display.flip()
-
-
-def main():
-    """Entry point for the game."""
-    game = Game()
-    game.run()
-
-
-if __name__ == "__main__":
-    main()
