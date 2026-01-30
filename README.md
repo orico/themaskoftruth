@@ -1,6 +1,6 @@
 # The Floor Is a Lie
 
-A top-down memory puzzle game where the floor visually lies to you. Navigate through deceptive tiles using a mask that briefly reveals the truth.
+A top-down memory puzzle game where the floor tiles lie to you. Navigate through deceptive tiles using a mask that briefly reveals the truth.
 
 ## 🎮 Gameplay
 
@@ -57,13 +57,26 @@ All game parameters are configurable via JSON:
 - Tile sizes and grid dimensions
 - UI colors and layout
 
-## 🚀 Installation & Running
+## 🚀 Installation & Development
 
 ### Prerequisites
 - Python 3.8+
 - Virtual environment (recommended)
 
-### Setup
+### Quick Setup
+```bash
+# Clone the repository
+git clone <repository-url>
+cd the-floor-is-a-lie
+
+# Install in development mode
+make install
+
+# Run the game
+make run
+```
+
+### Development Setup
 ```bash
 # Create virtual environment
 python -m venv .venv
@@ -71,11 +84,14 @@ python -m venv .venv
 # Activate virtual environment
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install in development mode
+pip install -e .
+
+# Run tests
+make test
 
 # Run the game
-python main.py
+make run
 ```
 
 ### Controls
@@ -85,24 +101,81 @@ python main.py
 - **E**: Enter level editor (during gameplay)
 - **ESC**: Exit level editor
 
+## 🧪 Testing
+
+The project includes comprehensive unit tests for all core modules:
+
+```bash
+# Run all tests
+make test
+
+# Run specific test file
+python -m pytest tests/test_player.py -v
+
+# Run with coverage
+python -m pytest --cov=src/the_floor_is_a_lie tests/
+```
+
+### Test Coverage
+- **Player Module**: Movement, mask mechanics, input handling
+- **Level Module**: Loading/saving, tile validation, collision detection
+- **Score Module**: Time tracking, star calculation, performance metrics
+
 ## 📁 Project Structure
 
 ```
-thetruthmask/
-├── main.py              # Main game loop and state management
-├── config.py            # Game configuration and constants
-├── player.py            # Player movement and mask mechanics
-├── tile.py              # Tile types and rendering
-├── level.py             # Level loading and grid management
-├── score.py             # Scoring and statistics
-├── ui.py                # User interface elements
-├── level_editor.py      # Level creation tools
-├── test_gameplay.py     # Gameplay verification tests
-├── requirements.txt     # Python dependencies
-├── levels/              # Level files directory
-│   └── level1.json     # Sample level
-└── README.md           # This file
+the-floor-is-a-lie/
+├── src/the_floor_is_a_lie/     # Main package
+│   ├── __init__.py            # Package initialization
+│   ├── config.py              # Game configuration and constants
+│   ├── player.py              # Player movement and mask mechanics
+│   ├── tile.py                # Tile types and rendering
+│   ├── level.py               # Level loading and grid management
+│   ├── score.py               # Scoring and statistics
+│   ├── ui.py                  # User interface elements
+│   ├── level_editor.py        # Level creation tools
+│   ├── game.py                # Main game orchestration
+│   └── main.py                # Entry point
+├── tests/                     # Test suite
+│   ├── __init__.py
+│   ├── test_player.py         # Player module tests
+│   ├── test_level.py          # Level module tests
+│   └── test_score.py          # Score module tests
+├── levels/                    # Level files directory
+│   └── level1.json           # Sample level
+├── main.py                    # Root entry point
+├── run_tests.py               # Test runner script
+├── pytest.ini                 # Pytest configuration
+├── pyproject.toml             # Package configuration
+├── Makefile                   # Development tasks
+├── uv.lock                    # Dependency lock file
+└── README.md                  # This file
 ```
+
+## 🔧 Development Tasks
+
+Use the provided Makefile for common development tasks:
+
+```bash
+make install    # Install in development mode
+make test       # Run test suite
+make run        # Run the game
+make clean      # Clean build artifacts
+make build      # Build distribution packages
+make lint       # Run code quality checks
+make format     # Format code with black
+```
+
+## 📊 Debugging
+
+The game includes comprehensive logging for troubleshooting:
+
+- **Key presses**: Logged when M key is pressed and mask state changes
+- **Player movement**: Grid position changes are logged
+- **Rendering**: Screen updates and mask effects are tracked
+- **Game state**: State transitions and win/lose conditions
+
+Check `game_debug.log` for detailed debug information.
 
 ## 🎯 Features Implemented
 
@@ -112,26 +185,22 @@ thetruthmask/
 - Three tile types with proper collision
 - Win/lose conditions
 
-✅ **Scoring System**
-- Time-based star ratings
+✅ **Scoring & UI**
+- Star-based scoring system
 - Mask usage penalty
-- Completion statistics
+- Real-time HUD with timers
+- Result screens with performance metrics
 
 ✅ **Level Editor**
 - Tile placement interface
 - Level saving/loading
-- Visual feedback
+- Visual feedback system
 
-✅ **UI/UX**
-- Real-time HUD (mask timer, time, uses)
-- Result screens with star ratings
-- Clean, readable interface
-
-✅ **Technical**
+✅ **Development**
 - Modular architecture
-- JSON-based level configuration
-- Configurable parameters
-- Comprehensive testing
+- Comprehensive test suite
+- Production-ready packaging
+- Logging and debugging tools
 
 ## 🔮 Future Expansions
 
