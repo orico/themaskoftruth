@@ -2,7 +2,6 @@
 
 import logging
 import os
-from typing import Optional
 
 import pygame
 
@@ -142,5 +141,5 @@ class Music:
             "is_paused": self.is_paused,
             "volume": self.volume,
             "muted": self.muted,
-            "music_file": self.music_file
+            "music_file": self.music_file,
         }
