@@ -1,7 +1,5 @@
 """Tests for the Score module."""
 
-import pytest
-
 from src.the_floor_is_a_lie.config import Config
 from src.the_floor_is_a_lie.score import ScoreSystem
 
@@ -123,13 +121,13 @@ class TestScoreSystem:
     def test_star_display(self):
         """Test star display formatting."""
         assert self.score.get_star_display(0) == "☆☆☆"
-        assert self.score.get_star_display(1) == "★★☆"
-        assert self.score.get_star_display(2) == "★★★"
+        assert self.score.get_star_display(1) == "★☆☆"
+        assert self.score.get_star_display(2) == "★★☆"
         assert self.score.get_star_display(3) == "★★★"
 
         # Test with current stars
         self.score.stars = 2
-        assert self.score.get_star_display() == "★★★"
+        assert self.score.get_star_display() == "★★☆"
 
     def test_performance_rating(self):
         """Test performance rating descriptions."""
@@ -156,7 +154,7 @@ class TestScoreSystem:
 
         assert summary["time"] == "00:45"
         assert summary["mask_uses"] == 2
-        assert summary["stars"] == "★★★"
+        assert summary["stars"] == "★★☆"
         assert summary["rating"] == "Good!"
         assert summary["time_thresholds"] == ["00:30", "01:00", "02:00"]
         assert summary["mask_threshold"] == 5

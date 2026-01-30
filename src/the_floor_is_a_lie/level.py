@@ -205,9 +205,11 @@ class Level:
 
     def get_level_info(self) -> Dict[str, Any]:
         """Get level information for display"""
+        width = len(self.grid[0]) if self.grid else 0
+        height = len(self.grid)
         return {
             "name": self.name,
-            "dimensions": (len(self.grid[0]), len(self.grid)),
+            "dimensions": (width, height),
             "start_pos": self.start_pos,
             "exit_pos": self.exit_pos,
             "mask_duration": self.mask_duration,

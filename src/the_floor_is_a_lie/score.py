@@ -57,9 +57,6 @@ class ScoreSystem:
         for threshold in sorted(self.time_thresholds, reverse=True):
             if self.final_time > threshold:
                 stars -= 1
-                if stars < 1:
-                    stars = 1
-                    break
 
         # Apply mask usage penalty
         if self.final_mask_uses > self.mask_threshold:
