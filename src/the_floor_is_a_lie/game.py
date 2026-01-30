@@ -269,9 +269,17 @@ class Game:
             logger.debug(f"Key pressed: {pygame.key.name(event.key)}")
             if event.key == pygame.K_m:
                 logger.info("M key pressed - toggling mask")
+                was_active = self.player.mask_active
                 self.player.toggle_mask()
                 mask_status = self.player.get_mask_status()
                 logger.info(f"Mask status after toggle: active={mask_status['active']}")
+
+                # If mask was just activated (not deactivated), increment score counter
+                if not was_active and mask_status["active"]:
+                    self.score_system.add_mask_use()
+                    logger.info(
+                        f"Mask use counted - total uses: {self.score_system.mask_uses}"
+                    )
             elif event.key == pygame.K_r:
                 logger.info("R key pressed - restarting game")
                 self.restart_game()
