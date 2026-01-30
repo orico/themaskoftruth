@@ -81,15 +81,19 @@ class Player:
         """Update mask timer and recharge"""
         if self.mask_active:
             self.mask_timer -= delta_time
-            if self.mask_timer <= 0:
+            if (
+                self.mask_timer <= 0.001
+            ):  # Use small epsilon for floating point precision
                 self.deactivate_mask()
         elif not self.mask_available:
             self.mask_recharge_timer -= delta_time
-            if self.mask_recharge_timer <= 0:
+            if (
+                self.mask_recharge_timer <= 0.001
+            ):  # Use small epsilon for floating point precision
                 self.mask_available = True
                 self.mask_recharge_timer = 0
 
-    def handle_input(self, keys):
+    def handle_input(self, keys, level=None):
         """Handle keyboard input for movement"""
         # Only allow movement if not currently moving to another tile
         if self.moving:
@@ -115,17 +119,19 @@ class Player:
             logger.debug(
                 f"Player moving to grid position: ({new_grid_x}, {new_grid_y})"
             )
-            self.move_to_grid(new_grid_x, new_grid_y)
+            self.move_to_grid(new_grid_x, new_grid_y, level)
 
-    def move_to_grid(self, grid_x: int, grid_y: int):
+    def move_to_grid(self, grid_x: int, grid_y: int, level=None):
         """Move player to specific grid position"""
         # Validate bounds
         if (
             0 <= grid_x < self.config.GRID_WIDTH
             and 0 <= grid_y < self.config.GRID_HEIGHT
         ):
-            self.target_grid_pos = (grid_x, grid_y)
-            self.moving = True
+            # Check if the target tile is walkable (if level is provided)
+            if level is None or level.is_walkable((grid_x, grid_y), self.mask_active):
+                self.target_grid_pos = (grid_x, grid_y)
+                self.moving = True
 
     def toggle_mask(self):
         """Toggle mask on/off"""
@@ -134,7 +140,8 @@ class Player:
         logger = logging.getLogger(__name__)
 
         logger.debug(
-            f"Toggle mask called. Available: {self.mask_available}, Active: {self.mask_active}"
+            f"Toggle mask called. Available: {self.mask_available}, "
+            f"Active: {self.mask_active}"
         )
 
         if self.mask_available and not self.mask_active:

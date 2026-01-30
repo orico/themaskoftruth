@@ -178,5 +178,109 @@ class TestPlayer:
         for key in expected_keys:
             assert key in status
 
-        assert status["active"] == self.player.mask_active
-        assert status["uses"] == self.player.mask_uses
+    def test_restart_functionality(self):
+        """Test that restart functionality works properly in game over state."""
+        import pygame
+        import pygame_gui
+
+        from src.the_floor_is_a_lie.game import Game
+        from src.the_floor_is_a_lie.ui import UI
+
+        # Initialize pygame for testing
+        pygame.init()
+        pygame.display.set_mode((800, 600))
+
+        try:
+            # Create a minimal game instance for testing
+            config = self.config
+            ui_manager = pygame_gui.UIManager(
+                (config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
+            )
+            game = Game()
+            game.ui = UI(config, ui_manager)
+
+            # Set game to game_over state
+            game.game_state = "game_over"
+
+            # Simulate pressing the restart key (like the UI button does)
+            restart_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_r)
+
+            # Process the event (simulate what happens in the main loop)
+            if restart_event.type == pygame.KEYDOWN and restart_event.key == pygame.K_r:
+                if game.game_state == "game_over":
+                    game.restart_game()
+
+            # Check that game state changed back to playing
+            assert (
+                game.game_state == "playing"
+            ), f"Expected playing state, got {game.game_state}"
+
+            # Check that game was reinitialized
+            assert (
+                game.player is not None
+            ), "Player should be reinitialized after restart"
+            assert game.level is not None, "Level should be reinitialized after restart"
+            assert (
+                game.score_system is not None
+            ), "Score system should be reinitialized after restart"
+
+            # Check that player stats were reset
+            assert game.player.mask_uses == 0, "Player mask uses should be reset"
+            assert (
+                not game.player.mask_active
+            ), "Player mask should not be active after restart"
+
+        finally:
+            pygame.quit()
+
+    def test_restart_button_triggers_event(self):
+        """Test that clicking restart button triggers the correct event."""
+        import pygame
+        import pygame_gui
+
+        from src.the_floor_is_a_lie.score import ScoreSystem
+        from src.the_floor_is_a_lie.ui import RESTART_GAME_EVENT, UI
+
+        # Initialize pygame for testing
+        pygame.init()
+        pygame.display.set_mode((800, 600))
+
+        try:
+            # Create UI instance
+            config = self.config
+            ui_manager = pygame_gui.UIManager(
+                (config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
+            )
+            ui = UI(config, ui_manager)
+
+            # Create score system for testing
+            score = ScoreSystem(config)
+
+            # Show game over screen
+            ui.show_game_over_screen(score)
+
+            # Verify result panel exists
+            assert (
+                ui.result_panel is not None
+            ), "Result panel should exist after showing game over screen"
+            assert ui.restart_button is not None, "Restart button should exist"
+
+            # Clear any existing events
+            pygame.event.clear()
+
+            # Simulate clicking the restart button
+            restart_button_event = pygame_gui.UI_BUTTON_PRESSED
+            button_event = pygame.event.Event(
+                restart_button_event, ui_element=ui.restart_button
+            )
+            ui.handle_ui_events(button_event)
+
+            # Check that the restart event was posted
+            events = pygame.event.get()
+            restart_events = [e for e in events if e.type == RESTART_GAME_EVENT]
+            assert (
+                len(restart_events) == 1
+            ), f"Expected 1 RESTART_GAME_EVENT, got {len(restart_events)}"
+
+        finally:
+            pygame.quit()

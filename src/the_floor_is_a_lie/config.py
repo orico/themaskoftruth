@@ -27,7 +27,7 @@ class Config:
 
     # Tile settings
     TILE_SIZE = 40
-    GRID_WIDTH = 10
+    GRID_WIDTH = 11
     GRID_HEIGHT = 10
 
     # Player settings

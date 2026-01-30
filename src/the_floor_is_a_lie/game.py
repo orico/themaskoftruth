@@ -343,6 +343,7 @@ class Game:
         # Hide result screen before reinitializing
         if self.ui:
             self.ui.hide_result_screen()
+            self.ui.cleanup()
         self.initialize_game()
         self.game_state = "playing"
 

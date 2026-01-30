@@ -221,6 +221,25 @@ class UI:
             self.restart_button = None
             self.editor_button = None
 
+    def cleanup(self):
+        """Clean up all UI elements"""
+        # Kill main UI elements
+        if self.mask_timer_text:
+            self.mask_timer_text.kill()
+            self.mask_timer_text = None
+        if self.mask_recharge_text:
+            self.mask_recharge_text.kill()
+            self.mask_recharge_text = None
+        if self.time_text:
+            self.time_text.kill()
+            self.time_text = None
+        if self.mask_uses_text:
+            self.mask_uses_text.kill()
+            self.mask_uses_text = None
+
+        # Kill result screen elements
+        self.hide_result_screen()
+
     def handle_ui_events(self, event):
         """Handle UI-specific events"""
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
