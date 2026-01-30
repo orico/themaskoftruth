@@ -42,13 +42,6 @@ class UI:
 
     def create_ui_elements(self):
         """Create initial UI elements"""
-        # Mask timer display (top-left)
-        self.mask_timer_text = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((10, 10), (200, 30)),
-            text="Mask: Ready",
-            manager=self.ui_manager,
-        )
-
         # Time display (top-right)
         self.time_text = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((self.config.SCREEN_WIDTH - 210, 10), (200, 30)),
@@ -56,9 +49,16 @@ class UI:
             manager=self.ui_manager,
         )
 
-        # Mask uses display (below mask timer)
+        # Mask timer display (below time on right side)
+        self.mask_timer_text = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((self.config.SCREEN_WIDTH - 210, 40), (200, 30)),
+            text="Mask: Ready",
+            manager=self.ui_manager,
+        )
+
+        # Mask uses display (below mask timer on right side)
         self.mask_uses_text = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((10, 40), (200, 30)),
+            relative_rect=pygame.Rect((self.config.SCREEN_WIDTH - 210, 70), (200, 30)),
             text="Uses: 0",
             manager=self.ui_manager,
         )
