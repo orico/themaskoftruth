@@ -269,7 +269,8 @@ class Game:
                 mask_status = self.player.get_mask_status()
                 logger.info(f"Mask status after toggle: active={mask_status['active']}")
 
-                # If mask was just activated (not deactivated), increment score counter and play sound
+                # If mask was just activated (not deactivated),
+                # increment score counter and play sound
                 if not was_active and mask_status["active"]:
                     self.score_system.add_mask_use()
                     logger.info(

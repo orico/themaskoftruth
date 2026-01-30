@@ -57,7 +57,9 @@ class UI:
     def load_mask_image(self):
         """Load the mask display image and create small icon"""
         try:
-            self.mask_image = pygame.image.load("sprites/gen-a8f9dc3d-d020-40c2-bb6d-22e58d5d0390.png").convert_alpha()
+            self.mask_image = pygame.image.load(
+                "sprites/gen-a8f9dc3d-d020-40c2-bb6d-22e58d5d0390.png"
+            ).convert_alpha()
             self.mask_image_loaded = True
 
             # Create small icon version (64x64 pixels)
@@ -70,7 +72,9 @@ class UI:
             scaled_width = int(img_width * scale_factor)
             scaled_height = int(img_height * scale_factor)
 
-            self.small_mask_icon = pygame.transform.scale(self.mask_image, (scaled_width, scaled_height))
+            self.small_mask_icon = pygame.transform.scale(
+                self.mask_image, (scaled_width, scaled_height)
+            )
             self.mask_icon_loaded = True
 
             logger.info("Mask image and icon loaded successfully")
@@ -113,7 +117,9 @@ class UI:
             manager=self.ui_manager,
         )
 
-    def render_game_ui(self, screen: pygame.Surface, player: Player, score_system: ScoreSystem):
+    def render_game_ui(
+        self, screen: pygame.Surface, player: Player, score_system: ScoreSystem
+    ):
         """Render game UI elements"""
         mask_status = player.get_mask_status()
         stats = score_system.get_current_stats()
@@ -131,12 +137,16 @@ class UI:
         # Render mask icon if available and loaded
         if mask_status["available"] and self.mask_icon_loaded:
             # Position icon to the left of the mask timer text
-            text_x = self.config.SCREEN_WIDTH - 210  # Same x position as mask_timer_text
+            text_x = (
+                self.config.SCREEN_WIDTH - 210
+            )  # Same x position as mask_timer_text
             text_y = 40  # Same y position as mask_timer_text
 
             # Position icon 20 pixels to the left of the text, centered vertically
             icon_x = text_x - 20
-            icon_y = text_y + (30 - self.small_mask_icon.get_height()) // 2  # 30 is approximate text height
+            icon_y = (
+                text_y + (30 - self.small_mask_icon.get_height()) // 2
+            )  # 30 is approximate text height
 
             screen.blit(self.small_mask_icon, (icon_x, icon_y))
 
@@ -162,7 +172,9 @@ class UI:
 
         # Calculate fade opacity for the remaining half-duration
         time_in_display_period = remaining_time - half_duration
-        fade_ratio = time_in_display_period / half_duration  # 1.0 at start of display, 0.0 at end
+        fade_ratio = (
+            time_in_display_period / half_duration
+        )  # 1.0 at start of display, 0.0 at end
         alpha = int(255 * fade_ratio)
 
         # Create a copy of the image with alpha
@@ -182,7 +194,9 @@ class UI:
 
         # Scale the image
         if scale_factor != 1.0:
-            scaled_image = pygame.transform.scale(mask_image_with_alpha, (scaled_width, scaled_height))
+            scaled_image = pygame.transform.scale(
+                mask_image_with_alpha, (scaled_width, scaled_height)
+            )
         else:
             scaled_image = mask_image_with_alpha
 
