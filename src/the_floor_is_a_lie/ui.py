@@ -4,6 +4,7 @@ UI module for The Floor Is a Lie
 Handles user interface elements, timers, and result screens
 """
 
+import logging
 from typing import Any, Dict
 
 import pygame
@@ -13,8 +14,13 @@ from .config import Config
 from .player import Player
 from .score import ScoreSystem
 
+logger = logging.getLogger(__name__)
+
 # Custom events
-RESTART_GAME_EVENT = pygame.USEREVENT + 1
+# NOTE: pygame_gui uses USEREVENT + 1 through USEREVENT + 20 for its own events
+# So we need to start our custom events after that range
+RESTART_GAME_EVENT = pygame.USEREVENT + 100
+RESTART_FROM_LEVEL_1_EVENT = pygame.USEREVENT + 101
 
 
 class UI:
@@ -35,6 +41,7 @@ class UI:
         self.win_text = None
         self.game_over_text = None
         self.restart_button = None
+        self.restart_level_1_button = None
         self.editor_button = None
 
         # Initialize UI elements
@@ -161,7 +168,7 @@ class UI:
         # Create result panel
         panel_rect = pygame.Rect(
             (self.config.SCREEN_WIDTH // 2 - 200, self.config.SCREEN_HEIGHT // 2 - 150),
-            (400, 250),
+            (400, 280),
         )
 
         self.result_panel = pygame_gui.elements.UIPanel(
@@ -203,10 +210,18 @@ class UI:
             )
             y_offset += 35
 
-        # Restart button
+        # Buttons
+        button_y = y_offset + 10
         self.restart_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((140, y_offset), (120, 40)),
-            text="Try Again (R)",
+            relative_rect=pygame.Rect((50, button_y), (130, 40)),
+            text="Try Again",
+            manager=self.ui_manager,
+            container=self.result_panel,
+        )
+
+        self.restart_level_1_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((200, button_y), (150, 40)),
+            text="Restart from Level 1",
             manager=self.ui_manager,
             container=self.result_panel,
         )
@@ -219,6 +234,7 @@ class UI:
             self.win_text = None
             self.game_over_text = None
             self.restart_button = None
+            self.restart_level_1_button = None
             self.editor_button = None
 
     def cleanup(self):
@@ -245,9 +261,18 @@ class UI:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             if hasattr(event, "ui_element"):
                 if self.restart_button and event.ui_element == self.restart_button:
-                    # Trigger restart (handled in main game loop)
+                    logger.info("Try Again button clicked - restarting current level")
+                    # Trigger restart current level (handled in main game loop)
                     pygame.event.post(pygame.event.Event(RESTART_GAME_EVENT))
+                elif (
+                    self.restart_level_1_button
+                    and event.ui_element == self.restart_level_1_button
+                ):
+                    logger.info("Restart from Level 1 button clicked")
+                    # Trigger restart from level 1 (handled in main game loop)
+                    pygame.event.post(pygame.event.Event(RESTART_FROM_LEVEL_1_EVENT))
                 elif self.editor_button and event.ui_element == self.editor_button:
+                    logger.info("Level Editor button clicked")
                     # Trigger level editor (handled in main game loop)
                     pygame.event.post(
                         pygame.event.Event(pygame.KEYDOWN, key=pygame.K_e)

@@ -13,7 +13,7 @@ from .level import Level
 from .level_editor import LevelEditor
 from .player import Player
 from .score import ScoreSystem
-from .ui import RESTART_GAME_EVENT, UI
+from .ui import RESTART_FROM_LEVEL_1_EVENT, RESTART_GAME_EVENT, UI
 
 logger = logging.getLogger(__name__)
 
@@ -119,11 +119,15 @@ class Game:
         else:
             logger.info("No more levels to load")
 
-    def initialize_game(self):
-        """Initialize or reset game modules."""
+    def initialize_game(self, level_index: Optional[int] = None):
+        """Initialize or reset game modules.
+
+        Args:
+            level_index: If provided, load this specific level.
+                If None, use current_level_index.
+        """
         logger.debug("Initializing game modules...")
         self.level = Level(self.config)
-        self.player = Player(self.config, self.level.start_pos)
         self.score_system = ScoreSystem(self.config)
         self.ui = UI(self.config, self.ui_manager)
 
@@ -133,15 +137,27 @@ class Game:
                 "Failed to load levels config, falling back to default level"
             )
             self.create_default_level()
+            # Create player AFTER level is loaded
+            self.player = Player(self.config, self.level.start_pos)
             return
 
-        # Load first level
-        self.current_level_index = 0
+        # Load specified level or current level
+        if level_index is not None:
+            self.current_level_index = level_index
+
         if not self.load_level_by_index(self.current_level_index):
-            logger.warning("Failed to load first level, creating default level...")
+            logger.warning(
+                f"Failed to load level {self.current_level_index}, "
+                "creating default level..."
+            )
             self.create_default_level()
 
-        logger.debug("Game modules initialized")
+        # Create player AFTER level is loaded so it gets the correct start position
+        self.player = Player(self.config, self.level.start_pos)
+
+        logger.debug(
+            f"Game modules initialized with level {self.current_level_index + 1}"
+        )
 
     def create_default_level(self):
         """Create a basic default level if none exists."""
@@ -181,7 +197,7 @@ class Game:
                 # Handle UI events
                 self.ui_manager.process_events(event)
 
-                # Handle UI-specific events
+                # Handle UI-specific events (check all events)
                 self.ui.handle_ui_events(event)
 
                 # Handle game-specific events
@@ -195,9 +211,12 @@ class Game:
                         event.type == pygame.KEYDOWN and event.key == pygame.K_r
                     ) or event.type == RESTART_GAME_EVENT:
                         logger.info(
-                            "Restart triggered during game over - restarting game"
+                            f"Restarting current level {self.current_level_index + 1}"
                         )
                         self.restart_game()
+                    elif event.type == RESTART_FROM_LEVEL_1_EVENT:
+                        logger.info("Restarting from level 1")
+                        self.restart_from_level_1()
 
             # Update game state
             if self.game_state == "playing":
@@ -294,17 +313,30 @@ class Game:
 
     def game_over(self):
         """Handle game over condition."""
+        logger.info(f"Game over on level {self.current_level_index + 1}")
         self.ui.show_game_over_screen(self.score_system)
         self.game_state = "game_over"
 
     def restart_game(self):
         """Restart the current level."""
-        logger.info("Restarting game")
+        logger.debug(f"Restarting level {self.current_level_index + 1}")
+        # Store current level index before reinitializing
+        current_idx = self.current_level_index
         # Hide result screen before reinitializing
         if self.ui:
             self.ui.hide_result_screen()
             self.ui.cleanup()
-        self.initialize_game()
+        self.initialize_game(level_index=current_idx)  # Explicitly pass current level
+        self.game_state = "playing"
+
+    def restart_from_level_1(self):
+        """Restart from level 1."""
+        logger.debug("Restarting from level 1")
+        # Hide result screen before reinitializing
+        if self.ui:
+            self.ui.hide_result_screen()
+            self.ui.cleanup()
+        self.initialize_game(level_index=0)  # Start from level 1
         self.game_state = "playing"
 
     def enter_level_editor(self):
