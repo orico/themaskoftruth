@@ -6,7 +6,6 @@ __email__ = "your.email@example.com"
 
 from .config import Config
 from .level import Level
-from .level_editor import LevelEditor
 from .player import Player
 from .score import ScoreSystem
 from .tile import Tile, TileType
@@ -20,5 +19,4 @@ __all__ = [
     "Level",
     "ScoreSystem",
     "UI",
-    "LevelEditor",
 ]

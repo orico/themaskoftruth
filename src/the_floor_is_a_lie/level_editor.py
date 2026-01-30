@@ -4,8 +4,6 @@ Level Editor module for The Floor Is a Lie
 Provides GUI for creating and editing levels
 """
 
-from typing import Optional
-
 import pygame
 import pygame_gui
 
@@ -129,7 +127,7 @@ class LevelEditor:
             mouse_pos = pygame.mouse.get_pos()
             grid_pos = self.screen_to_grid(mouse_pos)
 
-            if self.level.is_valid_position(grid_pos):
+            if grid_pos and self.level.is_valid_position(grid_pos):
                 self.level.set_tile_type(grid_pos, self.selected_tile_type)
                 self.modified = True
 
@@ -200,3 +198,20 @@ class LevelEditor:
         """Clean up editor UI elements"""
         if self.toolbar_panel:
             self.toolbar_panel.kill()
+            self.toolbar_panel = None
+
+        # Clean up individual buttons that might still exist
+        for button in self.tile_buttons.values():
+            if button:
+                button.kill()
+        self.tile_buttons.clear()
+
+        if self.save_button:
+            self.save_button.kill()
+            self.save_button = None
+        if self.load_button:
+            self.load_button.kill()
+            self.load_button = None
+        if self.back_button:
+            self.back_button.kill()
+            self.back_button = None

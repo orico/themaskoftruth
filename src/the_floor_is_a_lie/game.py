@@ -349,8 +349,10 @@ class Game:
 
     def enter_level_editor(self):
         """Switch to level editor mode."""
-        if self.level_editor is None:
-            self.level_editor = LevelEditor(self.config, self.ui_manager, self.level)
+        # Always create a fresh level editor instance to avoid UI cleanup issues
+        if self.level_editor is not None:
+            self.level_editor.cleanup()
+        self.level_editor = LevelEditor(self.config, self.ui_manager, self.level)
 
         self.game_state = "level_editor"
 
