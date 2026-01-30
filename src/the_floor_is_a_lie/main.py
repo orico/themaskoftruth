@@ -3,14 +3,14 @@
 import logging
 import sys
 
+from .game import Game
+
 # Set up logging
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.FileHandler("game_debug.log"), logging.StreamHandler()],
 )
-
-from .game import Game
 
 
 def main():
