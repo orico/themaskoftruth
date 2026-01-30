@@ -44,8 +44,40 @@ class UI:
         self.restart_level_1_button = None
         self.editor_button = None
 
+        # Mask image for display
+        self.mask_image = None
+        self.mask_image_loaded = False
+        self.small_mask_icon = None
+        self.mask_icon_loaded = False
+
         # Initialize UI elements
         self.create_ui_elements()
+        self.load_mask_image()
+
+    def load_mask_image(self):
+        """Load the mask display image and create small icon"""
+        try:
+            self.mask_image = pygame.image.load("sprites/gen-a8f9dc3d-d020-40c2-bb6d-22e58d5d0390.png").convert_alpha()
+            self.mask_image_loaded = True
+
+            # Create small icon version (64x64 pixels)
+            icon_size = 64
+            img_width = self.mask_image.get_width()
+            img_height = self.mask_image.get_height()
+
+            # Scale maintaining aspect ratio
+            scale_factor = min(icon_size / img_width, icon_size / img_height)
+            scaled_width = int(img_width * scale_factor)
+            scaled_height = int(img_height * scale_factor)
+
+            self.small_mask_icon = pygame.transform.scale(self.mask_image, (scaled_width, scaled_height))
+            self.mask_icon_loaded = True
+
+            logger.info("Mask image and icon loaded successfully")
+        except (pygame.error, FileNotFoundError) as e:
+            logger.warning(f"Failed to load mask image: {e}")
+            self.mask_image_loaded = False
+            self.mask_icon_loaded = False
 
     def create_ui_elements(self):
         """Create initial UI elements"""
@@ -81,7 +113,7 @@ class UI:
             manager=self.ui_manager,
         )
 
-    def render_game_ui(self, player: Player, score_system: ScoreSystem):
+    def render_game_ui(self, screen: pygame.Surface, player: Player, score_system: ScoreSystem):
         """Render game UI elements"""
         mask_status = player.get_mask_status()
         stats = score_system.get_current_stats()
@@ -96,12 +128,70 @@ class UI:
 
         self.mask_timer_text.set_text(timer_text)
 
+        # Render mask icon if available and loaded
+        if mask_status["available"] and self.mask_icon_loaded:
+            # Position icon to the left of the mask timer text
+            text_x = self.config.SCREEN_WIDTH - 210  # Same x position as mask_timer_text
+            text_y = 40  # Same y position as mask_timer_text
+
+            # Position icon 20 pixels to the left of the text, centered vertically
+            icon_x = text_x - 20
+            icon_y = text_y + (30 - self.small_mask_icon.get_height()) // 2  # 30 is approximate text height
+
+            screen.blit(self.small_mask_icon, (icon_x, icon_y))
+
         # Update time display
         time_str = score_system.get_time_formatted()
         self.time_text.set_text(f"Time: {time_str}")
 
         # Update mask uses
         self.mask_uses_text.set_text(f"Mask Uses: {stats['mask_uses']}")
+
+    def render_mask_image(self, screen: pygame.Surface, mask_status: dict):
+        """Render the mask image for the first half of mask duration"""
+        if not self.mask_image_loaded or not mask_status["active"]:
+            return
+
+        # Only show mask image for first half of mask duration
+        remaining_time = mask_status["timer"]
+        total_duration = mask_status["duration"]
+        half_duration = total_duration / 2
+
+        if remaining_time <= half_duration:
+            return
+
+        # Calculate fade opacity for the remaining half-duration
+        time_in_display_period = remaining_time - half_duration
+        fade_ratio = time_in_display_period / half_duration  # 1.0 at start of display, 0.0 at end
+        alpha = int(255 * fade_ratio)
+
+        # Create a copy of the image with alpha
+        mask_image_with_alpha = self.mask_image.copy()
+        mask_image_with_alpha.set_alpha(alpha)
+
+        # Calculate scaled size maintaining aspect ratio
+        img_width = self.mask_image.get_width()
+        img_height = self.mask_image.get_height()
+        screen_width = self.config.SCREEN_WIDTH
+        screen_height = self.config.SCREEN_HEIGHT
+
+        # Scale to fit screen while maintaining aspect ratio
+        scale_factor = min(screen_width / img_width, screen_height / img_height)
+        scaled_width = int(img_width * scale_factor)
+        scaled_height = int(img_height * scale_factor)
+
+        # Scale the image
+        if scale_factor != 1.0:
+            scaled_image = pygame.transform.scale(mask_image_with_alpha, (scaled_width, scaled_height))
+        else:
+            scaled_image = mask_image_with_alpha
+
+        # Center the image on screen
+        x = (screen_width - scaled_width) // 2
+        y = (screen_height - scaled_height) // 2
+
+        # Render the image
+        screen.blit(scaled_image, (x, y))
 
     def show_win_screen(self, score_system: ScoreSystem):
         """Show victory screen"""

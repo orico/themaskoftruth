@@ -148,6 +148,9 @@ class Game:
             "level_complete",
             "sound/audio-multiple-instruments-in-an-orchestra-doing-for-lev.mp3",
         )
+        self.sound_effects.load_sound(
+            "mask_activate", "sound/audio-mortal-kombat-announcer-shouting-.mp3"
+        )
 
         # Load levels configuration
         if not self.load_levels_config():
@@ -266,12 +269,14 @@ class Game:
                 mask_status = self.player.get_mask_status()
                 logger.info(f"Mask status after toggle: active={mask_status['active']}")
 
-                # If mask was just activated (not deactivated), increment score counter
+                # If mask was just activated (not deactivated), increment score counter and play sound
                 if not was_active and mask_status["active"]:
                     self.score_system.add_mask_use()
                     logger.info(
                         f"Mask use counted - total uses: {self.score_system.mask_uses}"
                     )
+                    # Play mask activation sound
+                    self.sound_effects.play_sound("mask_activate")
             elif event.key == pygame.K_r:
                 logger.info("R key pressed - restarting game")
                 self.restart_game()
@@ -419,7 +424,12 @@ class Game:
                 logger.warning("No player object to render!")
 
             # Render UI overlays
-            self.ui.render_game_ui(self.player, self.score_system)
+            self.ui.render_game_ui(self.screen, self.player, self.score_system)
+
+            # Render mask image overlay (if active)
+            if self.player:
+                mask_status = self.player.get_mask_status()
+                self.ui.render_mask_image(self.screen, mask_status)
 
         elif self.game_state == "level_editor":
             self.level_editor.render(self.screen)
