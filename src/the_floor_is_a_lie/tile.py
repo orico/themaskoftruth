@@ -87,12 +87,6 @@ class Tile:
         # Draw grid lines
         pygame.draw.rect(screen, (60, 60, 80), rect, 1)
 
-        # Draw special indicators for start/exit tiles
-        if self.type == TileType.START:
-            self._draw_start_indicator(screen, rect)
-        elif self.type == TileType.EXIT:
-            self._draw_exit_indicator(screen, rect)
-
     def _draw_start_indicator(self, screen: pygame.Surface, rect: pygame.Rect):
         """Draw start tile indicator"""
         center_x = rect.centerx

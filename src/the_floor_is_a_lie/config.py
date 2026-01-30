@@ -11,8 +11,8 @@ class Config:
     """Game configuration class"""
 
     # Display settings
-    SCREEN_WIDTH = 800
-    SCREEN_HEIGHT = 600
+    SCREEN_WIDTH = 1200
+    SCREEN_HEIGHT = 850
     FPS = 60
 
     # Colors
@@ -26,13 +26,13 @@ class Config:
     MASK_OVERLAY_COLOR = (0, 0, 0, 128)  # Semi-transparent black
 
     # Tile settings
-    TILE_SIZE = 40
+    TILE_SIZE = 80
     GRID_WIDTH = 11
     GRID_HEIGHT = 10
 
     # Player settings
-    PLAYER_SPEED = 200  # pixels per second
-    PLAYER_SIZE = 32
+    PLAYER_SPEED = 400  # pixels per second
+    PLAYER_SIZE = 77
 
     # Mask settings (default values, can be overridden by level)
     MASK_DURATION = 2.0  # seconds mask stays active
@@ -43,14 +43,14 @@ class Config:
     MASK_USE_THRESHOLD = 5  # maximum mask uses before star penalty
 
     # UI settings
-    FONT_SIZE_SMALL = 16
-    FONT_SIZE_MEDIUM = 24
-    FONT_SIZE_LARGE = 32
-    UI_PADDING = 10
+    FONT_SIZE_SMALL = 32
+    FONT_SIZE_MEDIUM = 48
+    FONT_SIZE_LARGE = 64
+    UI_PADDING = 20
 
     # Level editor settings
-    EDITOR_BUTTON_HEIGHT = 30
-    EDITOR_TOOLBAR_WIDTH = 200
+    EDITOR_BUTTON_HEIGHT = 60
+    EDITOR_TOOLBAR_WIDTH = 400
 
     # Music settings
     MUSIC_FILE = "music/audio-energetic-anime-music.mp3"

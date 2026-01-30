@@ -14,6 +14,7 @@ from .config import Config
 
 class AnimationState(Enum):
     """Animation states for player movement"""
+
     IDLE = "idle"
     TRANSITIONING_TO_RUN = "transitioning_to_run"
     RUNNING = "running"
@@ -23,17 +24,25 @@ class AnimationState(Enum):
 class Animation:
     """Helper class to manage sprite animations"""
 
-    def __init__(self, sprite_sheet_path: str, rows: int, cols: int,
-                 frame_duration: float = 0.1, frame_indices: list = None, loop: bool = True):
+    def __init__(
+        self,
+        sprite_sheet_path: str,
+        rows: int,
+        cols: int,
+        frame_duration: float = 0.1,
+        frame_indices: list = None,
+        loop: bool = True,
+    ):
         """
         Initialize animation with frame skipping support.
-        
+
         Args:
             sprite_sheet_path: Path to sprite sheet image
             rows: Number of rows in sprite sheet
             cols: Number of columns in sprite sheet
             frame_duration: Time per frame in seconds
-            frame_indices: List of specific frame indices to use (e.g., [0, 6, 12, 18, 24, 30])
+            frame_indices: List of specific frame indices to use
+                          (e.g., [0, 6, 12, 18, 24, 30])
                           If None, uses all frames sequentially
             loop: Whether to loop the animation (False for play-once animations)
         """
@@ -69,7 +78,7 @@ class Animation:
                 col * self.frame_width,
                 row * self.frame_height,
                 self.frame_width,
-                self.frame_height
+                self.frame_height,
             )
             frame = self.sprite_sheet.subsurface(frame_rect)
             self.frames.append(frame)
@@ -89,7 +98,7 @@ class Animation:
         self.timer += delta_time
         if self.timer >= self.frame_duration:
             self.timer = 0.0
-            
+
             # Update frame based on direction
             if self.reverse:
                 self.current_frame -= 1
@@ -113,19 +122,19 @@ class Animation:
     def play(self, reverse: bool = False):
         """
         Start playing animation.
-        
+
         Args:
             reverse: If True, play animation in reverse
         """
         self.playing = True
         self.reverse = reverse
         self.completed = False
-        
+
         if reverse:
             self.current_frame = self.num_frames - 1
         else:
             self.current_frame = 0
-        
+
         self.timer = 0.0
 
     def stop(self):
@@ -146,7 +155,7 @@ class Animation:
     def is_playing(self) -> bool:
         """Check if animation is currently playing"""
         return self.playing
-    
+
     def is_completed(self) -> bool:
         """Check if non-looping animation has completed"""
         return self.completed
@@ -184,7 +193,7 @@ class Player:
 
         # Animation setup
         self.facing_right = True  # Default facing direction
-        
+
         # Animation state tracking
         self.animation_state = AnimationState.IDLE
         self.idle_transition_delay = 0.15  # Wait 150ms before transitioning to idle
@@ -192,7 +201,7 @@ class Player:
 
         # Keyframe indices: use every 6th frame (0, 6, 12, 18, 24, 30)
         keyframe_indices = [0, 6, 12, 18, 24, 30]
-        
+
         # Create idle animation (just frames 0 and 6 - subtle breathing)
         self.idle_animation = Animation(
             "sprites/idle-to-running.png",
@@ -200,7 +209,7 @@ class Player:
             cols=6,
             frame_indices=[0, 6],
             frame_duration=0.3,  # Slow idle breathing
-            loop=True
+            loop=True,
         )
 
         # Create transition animation (full sequence from idle to running)
@@ -210,7 +219,7 @@ class Player:
             cols=6,
             frame_indices=keyframe_indices,
             frame_duration=0.08,  # Smooth transition
-            loop=False  # Play once
+            loop=False,  # Play once
         )
 
         # Create running animation (continuous running cycle)
@@ -220,7 +229,7 @@ class Player:
             cols=6,
             frame_indices=keyframe_indices,
             frame_duration=0.08,  # Fast running animation
-            loop=True
+            loop=True,
         )
 
         # Start with idle animation
@@ -228,12 +237,16 @@ class Player:
         self.current_animation.play()
 
         # Calculate scaling to fit within PLAYER_SIZE while maintaining aspect ratio
-        # Use idle animation for scaling calculation (all animations have same frame size)
+        # Use idle animation for scaling calculation
+        # (all animations have same frame size)
         frame_width = self.idle_animation.frame_width
         frame_height = self.idle_animation.frame_height
         scale_factor = min(self.size / frame_width, self.size / frame_height)
         self.sprite_scale = scale_factor
-        self.sprite_size = (int(frame_width * scale_factor), int(frame_height * scale_factor))
+        self.sprite_size = (
+            int(frame_width * scale_factor),
+            int(frame_height * scale_factor),
+        )
 
     def update(self, delta_time: float):
         """Update player state"""
@@ -242,7 +255,7 @@ class Player:
 
     def update_movement(self, delta_time: float):
         """Update player movement and animation state machine"""
-        
+
         # Handle movement physics
         if self.target_grid_pos:
             target_x, target_y = self.config.get_grid_center(self.target_grid_pos)
@@ -262,25 +275,28 @@ class Player:
                 self.velocity_x = (dx / distance) * self.speed
                 self.velocity_y = (dy / distance) * self.speed
                 self.moving = True
-                
+
                 # Update position
                 self.x += self.velocity_x * delta_time
                 self.y += self.velocity_y * delta_time
-                
+
                 # Update grid position (for collision detection)
                 self.grid_x = int(self.x // self.config.TILE_SIZE)
                 self.grid_y = int(self.y // self.config.TILE_SIZE)
-        
+
         # Track time since movement stopped (for delayed idle transition)
         if self.moving:
             self.time_since_movement_stopped = 0.0
         else:
             self.time_since_movement_stopped += delta_time
-        
-        # Determine if we should consider player as "actively moving" for animation
-        # This includes a grace period after movement stops to allow smooth continuous movement
-        is_actively_moving = self.moving or self.time_since_movement_stopped < self.idle_transition_delay
-        
+
+        # Determine if we should consider player as "actively moving"
+        # This includes a grace period after movement stops to allow
+        # smooth continuous movement
+        is_actively_moving = (
+            self.moving or self.time_since_movement_stopped < self.idle_transition_delay
+        )
+
         # Animation state machine
         if self.animation_state == AnimationState.IDLE:
             # In idle state, loop idle animation
@@ -289,7 +305,7 @@ class Player:
                 self.animation_state = AnimationState.TRANSITIONING_TO_RUN
                 self.current_animation = self.transition_animation
                 self.current_animation.play()
-        
+
         elif self.animation_state == AnimationState.TRANSITIONING_TO_RUN:
             # Playing transition animation
             if self.current_animation.is_completed():
@@ -302,7 +318,7 @@ class Player:
                 self.animation_state = AnimationState.TRANSITIONING_TO_IDLE
                 self.current_animation = self.transition_animation
                 self.current_animation.play(reverse=True)
-        
+
         elif self.animation_state == AnimationState.RUNNING:
             # In running state, loop running animation
             if not is_actively_moving:
@@ -310,7 +326,7 @@ class Player:
                 self.animation_state = AnimationState.TRANSITIONING_TO_IDLE
                 self.current_animation = self.running_animation
                 self.current_animation.play(reverse=True)
-        
+
         elif self.animation_state == AnimationState.TRANSITIONING_TO_IDLE:
             # Playing reverse animation
             if self.current_animation.is_completed():
@@ -323,7 +339,7 @@ class Player:
                 self.animation_state = AnimationState.TRANSITIONING_TO_RUN
                 self.current_animation = self.transition_animation
                 self.current_animation.play()
-        
+
         # Always update current animation
         self.current_animation.update(delta_time, animating=True)
 
@@ -354,7 +370,7 @@ class Player:
             self.facing_right = False  # Face left
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             target_grid_x += 1
-            self.facing_right = True   # Face right
+            self.facing_right = True  # Face right
         elif keys[pygame.K_UP] or keys[pygame.K_w]:
             target_grid_y -= 1
             # Keep current facing direction for up/down movement
@@ -370,12 +386,12 @@ class Player:
             dx = target_x - self.x
             dy = target_y - self.y
             distance = (dx**2 + dy**2) ** 0.5
-            
+
             # If we're more than halfway to the target, don't accept new input yet
             tile_size = self.config.TILE_SIZE
             if distance > tile_size * 0.4:  # More than 40% of tile away
                 return
-            
+
             # Use target position as base for next movement
             new_grid_x, new_grid_y = self.target_grid_pos
             target_grid_x = new_grid_x + (target_grid_x - self.grid_x)
@@ -479,7 +495,9 @@ class Player:
     def render(self, screen: pygame.Surface):
         """Render the player"""
         # Get current animation frame
-        current_frame = self.current_animation.get_current_frame(flip_x=not self.facing_right)
+        current_frame = self.current_animation.get_current_frame(
+            flip_x=not self.facing_right
+        )
 
         # Scale the frame to fit within PLAYER_SIZE while maintaining aspect ratio
         if self.sprite_scale != 1.0:
