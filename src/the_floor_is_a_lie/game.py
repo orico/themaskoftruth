@@ -87,6 +87,10 @@ class Game:
         logger.info(
             f"Loading level {level_index + 1}: {level_data['name']} ({level_file})"
         )
+
+        # Update window title with level name
+        pygame.display.set_caption(f"{level_data['name']} - Level {level_index + 1}")
+
         return self.level.load_level(level_file)
 
     def get_next_level_index(self) -> Optional[int]:
@@ -156,6 +160,9 @@ class Game:
             json.dump(default_level, f, indent=2)
 
         self.level.load_level("levels/level1.json")
+
+        # Update window title for default level
+        pygame.display.set_caption("The Floor Is a Lie - Level 1 (Default)")
 
     def run(self):
         """Main game loop."""
