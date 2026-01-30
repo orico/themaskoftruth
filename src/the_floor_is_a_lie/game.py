@@ -14,6 +14,7 @@ from .level_editor import LevelEditor
 from .music import Music
 from .player import Player
 from .score import ScoreSystem
+from .sound_effects import SoundEffects
 from .ui import RESTART_FROM_LEVEL_1_EVENT, RESTART_GAME_EVENT, UI
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ class Game:
         self.ui: Optional[UI] = None
         self.level_editor: Optional[LevelEditor] = None
         self.music: Optional[Music] = None
+        self.sound_effects: Optional[SoundEffects] = None
 
         # Initialize game
         self.initialize_game()
@@ -133,6 +135,19 @@ class Game:
         self.score_system = ScoreSystem(self.config)
         self.ui = UI(self.config, self.ui_manager)
         self.music = Music(self.config.MUSIC_FILE, self.config.MUSIC_VOLUME)
+        self.sound_effects = SoundEffects()
+
+        # Load sound effects
+        self.sound_effects.load_sound(
+            "fake_tile_fall", "sound/audio-Shattered-glass.mp3"
+        )
+        self.sound_effects.load_sound(
+            "fake_tile_fall_thump", "sound/audio-falling-sound-ending-with-a-thump.mp3"
+        )
+        self.sound_effects.load_sound(
+            "level_complete",
+            "sound/audio-multiple-instruments-in-an-orchestra-doing-for-lev.mp3",
+        )
 
         # Load levels configuration
         if not self.load_levels_config():
@@ -309,10 +324,16 @@ class Game:
         # Check if player stepped on fake tile (always dangerous)
         elif self.level.is_fake_tile(player_pos):
             logger.warning("Player stepped on fake tile - game over!")
+            # Play fake tile falling sound effects
+            self.sound_effects.play_sound("fake_tile_fall")
+            self.sound_effects.play_sound("fake_tile_fall_thump")
             self.game_over()
 
     def game_win(self):
         """Handle game win condition."""
+        # Play level completion sound
+        self.sound_effects.play_sound("level_complete")
+
         self.score_system.complete_level()
 
         # Check if there's a next level
