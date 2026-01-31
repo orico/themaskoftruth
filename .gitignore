@@ -133,8 +133,6 @@ Thumbs.db
 game_debug.log
 
 # Game assets (large files)
-music/
-sprites/
 
 # Pre-commit
 .pre-commit-config.yaml.backup

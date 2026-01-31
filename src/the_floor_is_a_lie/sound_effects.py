@@ -35,6 +35,8 @@ class SoundEffects:
             "fake_tile_fall_thump": "fake_tile_fall_thump",
             "level_complete": "level_complete",
             "mask_activate": "mask_activate",
+            "mask_ready": "mask_ready",
+            "mask_recharging": "mask_recharging",
             "reach_the_exit": "reach_the_exit",
         }
 

@@ -11,6 +11,7 @@ import pygame
 
 from .assets import get_asset_manager
 from .config import Config
+from .sound_effects import SoundEffects
 
 
 class AnimationState(Enum):
@@ -167,8 +168,14 @@ class Animation:
 
 
 class Player:
-    def __init__(self, config: Config, start_pos: Tuple[int, int]):
+    def __init__(
+        self,
+        config: Config,
+        start_pos: Tuple[int, int],
+        sound_effects: SoundEffects = None,
+    ):
         self.config = config
+        self.sound_effects = sound_effects
 
         # Position (screen coordinates)
         self.x, self.y = config.get_grid_center(start_pos)
@@ -199,6 +206,7 @@ class Player:
 
         # Animation setup
         self.facing_right = True  # Default facing direction
+        self.movement_direction = None  # 'horizontal', 'up', 'down'
 
         # Animation state tracking
         self.animation_state = AnimationState.IDLE
@@ -238,6 +246,28 @@ class Player:
             cols=6,
             frame_indices=list(range(36)),  # Use all 36 frames
             frame_duration=0.08,  # Fast running animation
+            loop=True,
+        )
+
+        # Create walk forward animation (for moving down)
+        walk_forward_sprite = asset_manager.get_sprite("player_walk_forward")
+        self.walk_forward_animation = Animation(
+            walk_forward_sprite,
+            rows=6,
+            cols=6,
+            frame_indices=list(range(36)),  # Use all 36 frames
+            frame_duration=0.08,  # Same timing as running animation
+            loop=True,
+        )
+
+        # Create walk backward animation (for moving up)
+        walk_backward_sprite = asset_manager.get_sprite("player_walk_backward")
+        self.walk_backward_animation = Animation(
+            walk_backward_sprite,
+            rows=6,
+            cols=6,
+            frame_indices=list(range(36)),  # Use all 36 frames
+            frame_duration=0.08,  # Same timing as running animation
             loop=True,
         )
 
@@ -360,9 +390,24 @@ class Player:
         elif self.animation_state == AnimationState.TRANSITIONING_TO_RUN:
             # Playing transition animation
             if self.current_animation.is_completed():
-                # Transition complete - switch to running loop
+                # Transition complete - switch to appropriate running animation based on direction
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    f"Transition complete, movement_direction: {self.movement_direction}"
+                )
+
                 self.animation_state = AnimationState.RUNNING
-                self.current_animation = self.running_animation
+                if self.movement_direction == "up":
+                    self.current_animation = self.walk_backward_animation
+                    logger.info("Switching to walk_backward_animation")
+                elif self.movement_direction == "down":
+                    self.current_animation = self.walk_forward_animation
+                    logger.info("Switching to walk_forward_animation")
+                else:  # horizontal or None
+                    self.current_animation = self.running_animation
+                    logger.info("Switching to running_animation")
                 self.current_animation.play()
             elif not is_actively_moving:
                 # Movement stopped during transition - reverse back to idle
@@ -372,6 +417,21 @@ class Player:
 
         elif self.animation_state == AnimationState.RUNNING:
             # In running state, loop running animation
+            # Check if we need to switch animation based on direction change
+            if is_actively_moving:
+                desired_animation = None
+                if self.movement_direction == "up":
+                    desired_animation = self.walk_backward_animation
+                elif self.movement_direction == "down":
+                    desired_animation = self.walk_forward_animation
+                else:  # horizontal or None
+                    desired_animation = self.running_animation
+
+                # Switch animation if direction changed
+                if desired_animation != self.current_animation:
+                    self.current_animation = desired_animation
+                    self.current_animation.play()
+
             if not is_actively_moving:
                 # Stop moving - transition back to idle (after delay)
                 self.animation_state = AnimationState.TRANSITIONING_TO_IDLE
@@ -385,6 +445,8 @@ class Player:
                 self.animation_state = AnimationState.IDLE
                 self.current_animation = self.idle_animation
                 self.current_animation.play()
+                # Clear movement direction when returning to idle
+                self.movement_direction = None
             elif is_actively_moving:
                 # Started moving again during reverse - go back to running
                 self.animation_state = AnimationState.TRANSITIONING_TO_RUN
@@ -409,6 +471,9 @@ class Player:
             ):  # Use small epsilon for floating point precision
                 self.mask_available = True
                 self.mask_recharge_timer = 0
+                # Play mask ready sound
+                if self.sound_effects:
+                    self.sound_effects.play_sound("mask_ready")
 
     def handle_input(self, keys, level=None):
         """Handle keyboard input for movement"""
@@ -423,21 +488,36 @@ class Player:
             target_grid_x -= 1
             self.facing_right = False  # Face left
             movement_key_detected = True
+            self.movement_direction = "horizontal"
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             target_grid_x += 1
             self.facing_right = True  # Face right
             movement_key_detected = True
+            self.movement_direction = "horizontal"
         elif keys[pygame.K_UP] or keys[pygame.K_w]:
             target_grid_y -= 1
             # Keep current facing direction for up/down movement
             movement_key_detected = True
+            self.movement_direction = "up"
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info("UP key pressed, setting movement_direction to 'up'")
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             target_grid_y += 1
             # Keep current facing direction for up/down movement
             movement_key_detected = True
+            self.movement_direction = "down"
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info("DOWN key pressed, setting movement_direction to 'down'")
 
         # Update movement keys pressed state
         self.movement_keys_pressed = movement_key_detected
+
+        # Don't clear movement_direction here - it needs to persist through the transition animation
+        # It will be cleared when we return to IDLE state
 
         # If currently moving, use current grid position as starting point
         # This allows queuing next movement when near the target tile
@@ -521,6 +601,10 @@ class Player:
         self.mask_available = False
         self.mask_recharge_timer = self.mask_cooldown
 
+        # Play mask recharging sound
+        if self.sound_effects:
+            self.sound_effects.play_sound("mask_recharging")
+
         # Trigger reverse animation from MASK_ACTIVE
         if self.animation_state == AnimationState.MASK_ACTIVE:
             self.animation_state = AnimationState.MASK_DEACTIVATING
@@ -555,6 +639,7 @@ class Player:
         self.animation_state = AnimationState.IDLE
         self.time_since_movement_stopped = 0.0
         self.movement_keys_pressed = False
+        self.movement_direction = None
         self.current_animation = self.idle_animation
         self.current_animation.stop()  # Stop and reset to first frame
         self.current_animation.play()  # Start playing again

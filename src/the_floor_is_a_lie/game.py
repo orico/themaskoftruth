@@ -173,7 +173,7 @@ class Game:
             )
             self.create_default_level()
             # Create player AFTER level is loaded
-            self.player = Player(self.config, self.level.start_pos)
+            self.player = Player(self.config, self.level.start_pos, self.sound_effects)
             return
 
         # Load specified level or current level
@@ -188,7 +188,7 @@ class Game:
             self.create_default_level()
 
         # Create player AFTER level is loaded so it gets the correct start position
-        self.player = Player(self.config, self.level.start_pos)
+        self.player = Player(self.config, self.level.start_pos, self.sound_effects)
 
         logger.debug(
             f"Game modules initialized with level {self.current_level_index + 1}"
