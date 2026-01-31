@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Tuple
 import pygame
 import pygame_gui
 
+from .assets import get_asset_manager
 from .config import Config
 from .level import Level
 from .level_editor import LevelEditor
@@ -36,11 +37,16 @@ class Game:
         # Load configuration
         self.config = Config()
 
-        # Set up display
+        # Set up display FIRST (required for convert_alpha())
         self.screen = pygame.display.set_mode(
             (self.config.SCREEN_WIDTH, self.config.SCREEN_HEIGHT)
         )
         pygame.display.set_caption("The Floor Is a Lie")
+
+        # Initialize asset manager AFTER display is set up (preloads all assets)
+        logger.info("Preloading all game assets...")
+        get_asset_manager()
+        logger.info("Asset preloading complete!")
 
         # Initialize GUI manager
         self.ui_manager = pygame_gui.UIManager(
@@ -156,25 +162,9 @@ class Game:
         self.score_system = ScoreSystem(self.config)
         self.ui = UI(self.config, self.ui_manager)
         self.music = Music(self.config.MUSIC_FILE, self.config.MUSIC_VOLUME)
-        self.sound_effects = SoundEffects()
-
-        # Load sound effects
-        self.sound_effects.load_sound(
-            "fake_tile_fall", "sound/audio-Shattered-glass.mp3"
-        )
-        self.sound_effects.load_sound(
-            "fake_tile_fall_thump", "sound/audio-falling-sound-ending-with-a-thump.mp3"
-        )
-        self.sound_effects.load_sound(
-            "level_complete",
-            "sound/audio-multiple-instruments-in-an-orchestra-doing-for-lev.mp3",
-        )
-        self.sound_effects.load_sound(
-            "mask_activate", "sound/audio-mortal-kombat-announcer-shouting-.mp3"
-        )
-        self.sound_effects.load_sound(
-            "reach_the_exit", "sound/reach-the-exit_speed_25pct.mp3"
-        )
+        self.sound_effects = (
+            SoundEffects()
+        )  # Now loads from asset manager automatically
 
         # Load levels configuration
         if not self.load_levels_config():

@@ -9,6 +9,7 @@ from typing import Tuple
 
 import pygame
 
+from .assets import get_asset_manager
 from .config import Config
 
 
@@ -30,7 +31,7 @@ class Animation:
 
     def __init__(
         self,
-        sprite_sheet_path: str,
+        sprite_sheet: pygame.Surface,
         rows: int,
         cols: int,
         frame_duration: float = 0.1,
@@ -41,7 +42,7 @@ class Animation:
         Initialize animation with frame skipping support.
 
         Args:
-            sprite_sheet_path: Path to sprite sheet image
+            sprite_sheet: Preloaded sprite sheet surface
             rows: Number of rows in sprite sheet
             cols: Number of columns in sprite sheet
             frame_duration: Time per frame in seconds
@@ -50,7 +51,7 @@ class Animation:
                           If None, uses all frames sequentially
             loop: Whether to loop the animation (False for play-once animations)
         """
-        self.sprite_sheet = pygame.image.load(sprite_sheet_path).convert_alpha()
+        self.sprite_sheet = sprite_sheet
         self.rows = rows
         self.cols = cols
         self.total_frames = rows * cols
@@ -204,10 +205,13 @@ class Player:
         self.idle_transition_delay = 0.15  # Wait 150ms before transitioning to idle
         self.time_since_movement_stopped = 0.0
 
+        # Get preloaded sprites from asset manager
+        asset_manager = get_asset_manager()
+
         # Create idle animation (full 36-frame cycle)
-        idle_sprite_path = "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (3).png"  # noqa: E501
+        idle_sprite = asset_manager.get_sprite("player_idle")
         self.idle_animation = Animation(
-            idle_sprite_path,
+            idle_sprite,
             rows=6,
             cols=6,
             frame_indices=list(range(36)),  # Use all 36 frames
@@ -216,8 +220,9 @@ class Player:
         )
 
         # Create transition animation (full sequence from idle to running)
+        transition_sprite = asset_manager.get_sprite("player_transition")
         self.transition_animation = Animation(
-            "sprites/transition-from-idle-to-running.png",
+            transition_sprite,
             rows=4,
             cols=4,
             frame_indices=list(range(16)),  # Use all 16 frames
@@ -226,9 +231,9 @@ class Player:
         )
 
         # Create running animation (continuous running cycle)
+        running_sprite = asset_manager.get_sprite("player_running")
         self.running_animation = Animation(
-            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 "
-            "(1).png",
+            running_sprite,
             rows=6,
             cols=6,
             frame_indices=list(range(36)),  # Use all 36 frames
@@ -238,10 +243,10 @@ class Player:
 
         # Create mask activation/deactivation animation
         # Assuming 6x6 grid (36 frames) for the mask sprite sheet
+        mask_sprite = asset_manager.get_sprite("player_mask")
         mask_frame_indices = list(range(36))  # Use all 36 frames sequentially
         self.mask_animation = Animation(
-            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 "
-            "(2).png",
+            mask_sprite,
             rows=6,
             cols=6,
             frame_indices=mask_frame_indices,
@@ -250,8 +255,9 @@ class Player:
         )
 
         # Create death animation using the falling death sprite
+        death_sprite = asset_manager.get_sprite("player_death")
         self.death_animation = Animation(
-            "sprites/falling death.png",
+            death_sprite,
             rows=6,
             cols=6,
             frame_indices=list(range(36)),  # Use all 36 frames

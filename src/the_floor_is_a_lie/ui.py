@@ -10,6 +10,7 @@ from typing import Any, Dict
 import pygame
 import pygame_gui
 
+from .assets import get_asset_manager
 from .config import Config
 from .player import Player
 from .score import ScoreSystem
@@ -132,11 +133,7 @@ class UI:
 
         # Initialize UI elements
         self.create_ui_elements()
-        self.load_mask_image()
-        self.load_game_over_sprite()
-        self.load_level_clear_sprite()
-        self.load_star_sprite()
-        self.load_main_menu_sprite()
+        self.load_sprites_from_asset_manager()
 
     def update_color_cycle(self, delta_time: float):
         """Update the color cycling for the 'Push The Any Key' text"""
@@ -189,14 +186,15 @@ class UI:
 
         self.current_color = (r, g, b)
 
-    def load_mask_image(self):
-        """Load the mask display image and create small icon"""
-        try:
-            self.mask_image = pygame.image.load(
-                "sprites/gen-a8f9dc3d-d020-40c2-bb6d-22e58d5d0390.png"
-            ).convert_alpha()
-            self.mask_image_loaded = True
+    def load_sprites_from_asset_manager(self):
+        """Load all UI sprites from the asset manager."""
+        asset_manager = get_asset_manager()
 
+        # Load mask image and create small icon
+        self.mask_image = asset_manager.get_sprite("mask_image")
+        self.mask_image_loaded = self.mask_image is not None
+
+        if self.mask_image_loaded:
             # Create small icon version (64x64 pixels)
             icon_size = 64
             img_width = self.mask_image.get_width()
@@ -211,60 +209,39 @@ class UI:
                 self.mask_image, (scaled_width, scaled_height)
             )
             self.mask_icon_loaded = True
-
-            logger.info("Mask image and icon loaded successfully")
-        except (pygame.error, FileNotFoundError) as e:
-            logger.warning(f"Failed to load mask image: {e}")
-            self.mask_image_loaded = False
+            logger.debug("Mask image and icon loaded from asset manager")
+        else:
             self.mask_icon_loaded = False
+            logger.warning("Failed to load mask image from asset manager")
 
-    def load_game_over_sprite(self):
-        """Load the game over menu sprite"""
-        try:
-            self.game_over_sprite = pygame.image.load(
-                "sprites/game-over-menu.png"
-            ).convert_alpha()
-            self.game_over_sprite_loaded = True
-            logger.info("Game over sprite loaded successfully")
-        except (pygame.error, FileNotFoundError) as e:
-            logger.warning(f"Failed to load game over sprite: {e}")
-            self.game_over_sprite_loaded = False
+        # Load game over sprite
+        self.game_over_sprite = asset_manager.get_sprite("game_over_menu")
+        self.game_over_sprite_loaded = self.game_over_sprite is not None
+        if not self.game_over_sprite_loaded:
+            logger.warning("Failed to load game over sprite from asset manager")
 
-    def load_level_clear_sprite(self):
-        """Load the level clear menu sprite"""
-        try:
-            self.level_clear_sprite = pygame.image.load(
-                "sprites/level-clear.png"
-            ).convert_alpha()
-            self.level_clear_sprite_loaded = True
-            logger.info("Level clear sprite loaded successfully")
-        except (pygame.error, FileNotFoundError) as e:
-            logger.warning(f"Failed to load level clear sprite: {e}")
-            self.level_clear_sprite_loaded = False
+        # Load level clear sprite
+        self.level_clear_sprite = asset_manager.get_sprite("level_clear")
+        self.level_clear_sprite_loaded = self.level_clear_sprite is not None
+        if not self.level_clear_sprite_loaded:
+            logger.warning("Failed to load level clear sprite from asset manager")
 
-    def load_star_sprite(self):
-        """Load the star sprite for ratings"""
-        try:
-            self.star_sprite = pygame.image.load("sprites/star2.png").convert_alpha()
+        # Load star sprite
+        self.star_sprite = asset_manager.get_sprite("star")
+        if self.star_sprite:
             # Set black as transparent color in case alpha channel isn't properly set
             self.star_sprite.set_colorkey((0, 0, 0))
             self.star_sprite_loaded = True
-            logger.info("Star sprite loaded successfully")
-        except (pygame.error, FileNotFoundError) as e:
-            logger.warning(f"Failed to load star sprite: {e}")
+            logger.debug("Star sprite loaded from asset manager")
+        else:
             self.star_sprite_loaded = False
+            logger.warning("Failed to load star sprite from asset manager")
 
-    def load_main_menu_sprite(self):
-        """Load the main menu sprite"""
-        try:
-            self.main_menu_sprite = pygame.image.load(
-                "sprites/main-menu.png"
-            ).convert_alpha()
-            self.main_menu_sprite_loaded = True
-            logger.info("Main menu sprite loaded successfully")
-        except (pygame.error, FileNotFoundError) as e:
-            logger.warning(f"Failed to load main menu sprite: {e}")
-            self.main_menu_sprite_loaded = False
+        # Load main menu sprite
+        self.main_menu_sprite = asset_manager.get_sprite("main_menu")
+        self.main_menu_sprite_loaded = self.main_menu_sprite is not None
+        if not self.main_menu_sprite_loaded:
+            logger.warning("Failed to load main menu sprite from asset manager")
 
     def create_ui_elements(self):
         """Create initial UI elements"""

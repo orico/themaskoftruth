@@ -9,6 +9,7 @@ from typing import Tuple
 
 import pygame
 
+from .assets import get_asset_manager
 from .config import Config
 
 
@@ -41,52 +42,52 @@ class Tile:
             TileType.EXIT: config.TILE_EXIT_COLOR,
         }
 
-        # Load tile sprites (preload both for efficiency)
-        self.real_sprite = None
-        self.fake_sprite = None
-        self._load_sprites()
+        # Get scaled tile sprites from cache (shared across all tiles)
+        self.real_sprite = Tile._get_scaled_sprite("tile_real", config.TILE_SIZE)
+        self.fake_sprite = Tile._get_scaled_sprite("tile_fake", config.TILE_SIZE)
 
-    def _load_sprites(self):
-        """Load and scale tile sprites"""
-        tile_size = self.config.TILE_SIZE
+    # Class-level cache for scaled sprites (shared across all tile instances)
+    _scaled_sprite_cache: dict = {}
 
-        # Load real tile sprite
-        try:
-            real_sprite = pygame.image.load(
-                "sprites/gen-df79415f-5e74-4ac9-86f6-5ee620955741.png"
-            ).convert_alpha()
-            sprite_width = real_sprite.get_width()
-            sprite_height = real_sprite.get_height()
-            scale_x = tile_size / sprite_width
-            scale_y = tile_size / sprite_height
-            scale = min(scale_x, scale_y)
-            new_width = int(sprite_width * scale)
-            new_height = int(sprite_height * scale)
-            self.real_sprite = pygame.transform.scale(
-                real_sprite, (new_width, new_height)
-            )
-        except pygame.error as e:
-            print(f"Failed to load real tile sprite: {e}")
-            self.real_sprite = None
+    @classmethod
+    def _get_scaled_sprite(cls, sprite_id: str, tile_size: int) -> pygame.Surface:
+        """Get a scaled sprite from cache or create and cache it.
 
-        # Load fake tile sprite
-        try:
-            fake_sprite = pygame.image.load(
-                "sprites/gen-9468de96-df80-4f4d-b92f-4a063b5c86b5.png"
-            ).convert_alpha()
-            sprite_width = fake_sprite.get_width()
-            sprite_height = fake_sprite.get_height()
-            scale_x = tile_size / sprite_width
-            scale_y = tile_size / sprite_height
-            scale = min(scale_x, scale_y)
-            new_width = int(sprite_width * scale)
-            new_height = int(sprite_height * scale)
-            self.fake_sprite = pygame.transform.scale(
-                fake_sprite, (new_width, new_height)
-            )
-        except pygame.error as e:
-            print(f"Failed to load fake tile sprite: {e}")
-            self.fake_sprite = None
+        Args:
+            sprite_id: ID of the sprite in asset manager
+            tile_size: Size to scale the sprite to
+
+        Returns:
+            Scaled sprite surface, or None if sprite not found
+        """
+        cache_key = f"{sprite_id}_{tile_size}"
+
+        # Return cached sprite if available
+        if cache_key in cls._scaled_sprite_cache:
+            return cls._scaled_sprite_cache[cache_key]
+
+        # Get sprite from asset manager
+        asset_manager = get_asset_manager()
+        sprite = asset_manager.get_sprite(sprite_id)
+
+        if sprite is None:
+            cls._scaled_sprite_cache[cache_key] = None
+            return None
+
+        # Scale sprite to fit tile size
+        sprite_width = sprite.get_width()
+        sprite_height = sprite.get_height()
+        scale_x = tile_size / sprite_width
+        scale_y = tile_size / sprite_height
+        scale = min(scale_x, scale_y)
+        new_width = int(sprite_width * scale)
+        new_height = int(sprite_height * scale)
+
+        scaled_sprite = pygame.transform.scale(sprite, (new_width, new_height))
+
+        # Cache the scaled sprite
+        cls._scaled_sprite_cache[cache_key] = scaled_sprite
+        return scaled_sprite
 
     def is_walkable(self, mask_active: bool = False) -> bool:
         """Check if tile is walkable given mask state"""

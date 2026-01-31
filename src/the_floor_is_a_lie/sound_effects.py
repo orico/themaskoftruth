@@ -1,10 +1,11 @@
 """Sound effects module for The Floor Is a Lie."""
 
 import logging
-import os
 from typing import Dict
 
 import pygame
+
+from .assets import get_asset_manager
 
 logger = logging.getLogger(__name__)
 
@@ -21,28 +22,45 @@ class SoundEffects:
         if not pygame.mixer.get_init():
             pygame.mixer.init()
 
+        # Load all sounds from asset manager
+        self._load_sounds_from_asset_manager()
+
+    def _load_sounds_from_asset_manager(self):
+        """Load all sound effects from the asset manager."""
+        asset_manager = get_asset_manager()
+
+        # Map of sound IDs used in game to asset manager IDs
+        sound_mappings = {
+            "fake_tile_fall": "fake_tile_fall",
+            "fake_tile_fall_thump": "fake_tile_fall_thump",
+            "level_complete": "level_complete",
+            "mask_activate": "mask_activate",
+            "reach_the_exit": "reach_the_exit",
+        }
+
+        for sound_id, asset_id in sound_mappings.items():
+            sound = asset_manager.get_sound(asset_id)
+            if sound:
+                self.sounds[sound_id] = sound
+                self.sounds[sound_id].set_volume(self.volume)
+                logger.debug(f"Loaded sound effect '{sound_id}' from asset manager")
+            else:
+                logger.warning(f"Failed to load sound '{sound_id}' from asset manager")
+
     def load_sound(self, sound_id: str, sound_file: str) -> bool:
-        """Load a sound effect.
+        """Load a sound effect (deprecated - now loads from asset manager).
+
+        This method is kept for backwards compatibility but now uses preloaded sounds.
 
         Args:
             sound_id: Unique identifier for this sound effect
-            sound_file: Path to the sound file
+            sound_file: Path to the sound file (ignored, uses asset manager)
 
         Returns:
             True if sound loaded successfully, False otherwise
         """
-        try:
-            if os.path.exists(sound_file):
-                self.sounds[sound_id] = pygame.mixer.Sound(sound_file)
-                self.sounds[sound_id].set_volume(self.volume)
-                logger.info(f"Loaded sound effect '{sound_id}': {sound_file}")
-                return True
-            else:
-                logger.warning(f"Sound file not found: {sound_file}")
-                return False
-        except pygame.error as e:
-            logger.error(f"Failed to load sound '{sound_id}' from {sound_file}: {e}")
-            return False
+        # Sound is already loaded from asset manager in __init__
+        return sound_id in self.sounds
 
     def play_sound(self, sound_id: str) -> bool:
         """Play a sound effect.
