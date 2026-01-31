@@ -193,6 +193,7 @@ class Player:
         # Movement state
         self.moving = False
         self.target_grid_pos = None
+        self.movement_keys_pressed = False  # Track if movement keys are currently held
 
         # Animation setup
         self.facing_right = True  # Default facing direction
@@ -201,9 +202,6 @@ class Player:
         self.animation_state = AnimationState.IDLE
         self.idle_transition_delay = 0.15  # Wait 150ms before transitioning to idle
         self.time_since_movement_stopped = 0.0
-
-        # Keyframe indices: use every 6th frame (0, 6, 12, 18, 24, 30)
-        keyframe_indices = [0, 6, 12, 18, 24, 30]
 
         # Create idle animation (full 36-frame cycle)
         idle_sprite_path = "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (3).png"  # noqa: E501
@@ -218,32 +216,31 @@ class Player:
 
         # Create transition animation (full sequence from idle to running)
         self.transition_animation = Animation(
-            "sprites/idle-to-running.png",
-            rows=6,
-            cols=6,
-            frame_indices=keyframe_indices,
-            frame_duration=0.08,  # Smooth transition
+            "sprites/transition-from-idle-to-running.png",
+            rows=4,
+            cols=4,
+            frame_indices=list(range(16)),  # Use all 16 frames
+            frame_duration=0.03125,  # 0.5 seconds total for 16 frames
             loop=False,  # Play once
         )
 
         # Create running animation (continuous running cycle)
         self.running_animation = Animation(
-            "sprites/walk-cycle-right.png",
+            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 "
+            "(1).png",
             rows=6,
             cols=6,
-            frame_indices=keyframe_indices,
+            frame_indices=list(range(36)),  # Use all 36 frames
             frame_duration=0.08,  # Fast running animation
             loop=True,
         )
 
         # Create mask activation/deactivation animation
         # Assuming 6x6 grid (36 frames) for the mask sprite sheet
-        mask_sprite = (
-            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (2).png"
-        )
         mask_frame_indices = list(range(36))  # Use all 36 frames sequentially
         self.mask_animation = Animation(
-            mask_sprite,
+            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 "
+            "(2).png",
             rows=6,
             cols=6,
             frame_indices=mask_frame_indices,
@@ -322,10 +319,11 @@ class Player:
             self.time_since_movement_stopped += delta_time
 
         # Determine if we should consider player as "actively moving"
-        # This includes a grace period after movement stops to allow
-        # smooth continuous movement
+        # Includes current movement, recently stopped movement, or keys being held
         is_actively_moving = (
-            self.moving or self.time_since_movement_stopped < self.idle_transition_delay
+            self.moving
+            or self.movement_keys_pressed
+            or self.time_since_movement_stopped < self.idle_transition_delay
         )
 
         # Animation state machine
@@ -396,18 +394,28 @@ class Player:
         new_grid_x, new_grid_y = self.grid_x, self.grid_y
         target_grid_x, target_grid_y = self.grid_x, self.grid_y
 
+        # Track if any movement keys are currently pressed
+        movement_key_detected = False
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             target_grid_x -= 1
             self.facing_right = False  # Face left
+            movement_key_detected = True
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             target_grid_x += 1
             self.facing_right = True  # Face right
+            movement_key_detected = True
         elif keys[pygame.K_UP] or keys[pygame.K_w]:
             target_grid_y -= 1
             # Keep current facing direction for up/down movement
+            movement_key_detected = True
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             target_grid_y += 1
             # Keep current facing direction for up/down movement
+            movement_key_detected = True
+
+        # Update movement keys pressed state
+        self.movement_keys_pressed = movement_key_detected
 
         # If currently moving, use current grid position as starting point
         # This allows queuing next movement when near the target tile
@@ -524,6 +532,7 @@ class Player:
         # Reset animation
         self.animation_state = AnimationState.IDLE
         self.time_since_movement_stopped = 0.0
+        self.movement_keys_pressed = False
         self.current_animation = self.idle_animation
         self.current_animation.stop()  # Stop and reset to first frame
         self.current_animation.play()  # Start playing again
