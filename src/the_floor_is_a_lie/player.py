@@ -203,6 +203,7 @@ class Player:
         self.moving = False
         self.target_grid_pos = None
         self.movement_keys_pressed = False  # Track if movement keys are currently held
+        self.can_accept_input = True  # Track if we can accept new movement input
 
         # Animation setup
         self.facing_right = True  # Default facing direction
@@ -234,7 +235,7 @@ class Player:
             rows=4,
             cols=4,
             frame_indices=list(range(16)),  # Use all 16 frames
-            frame_duration=0.03125,  # 0.5 seconds total for 16 frames
+            frame_duration=0.015625,  # 0.25 seconds total for 16 frames (2x faster)
             loop=False,  # Play once
         )
 
@@ -352,6 +353,8 @@ class Player:
                 self.velocity_x = 0
                 self.velocity_y = 0
                 self.moving = False
+                # Allow accepting new input now that we've reached the target
+                self.can_accept_input = True
             else:
                 # Move towards target
                 self.velocity_x = (dx / distance) * self.speed
@@ -484,12 +487,9 @@ class Player:
 
     def handle_input(self, keys, level=None):
         """Handle keyboard input for movement"""
-        # Check for movement input
-        new_grid_x, new_grid_y = self.grid_x, self.grid_y
-        target_grid_x, target_grid_y = self.grid_x, self.grid_y
-
         # Track if any movement keys are currently pressed
         movement_key_detected = False
+        target_grid_x, target_grid_y = self.grid_x, self.grid_y
 
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             target_grid_x -= 1
@@ -515,31 +515,17 @@ class Player:
         # Update movement keys pressed state
         self.movement_keys_pressed = movement_key_detected
 
-        # Don't clear movement_direction here - it needs to persist through
-        # the transition animation
-        # It will be cleared when we return to IDLE state
+        # Only accept new movement if:
+        # 1. Not currently moving (fresh input), OR
+        # 2. Just reached target and can accept input (continuous movement)
+        if not movement_key_detected:
+            return
 
-        # If currently moving, use current grid position as starting point
-        # This allows queuing next movement when near the target tile
-        if self.moving and self.target_grid_pos:
-            # Check if we're close to the target - if so, allow setting new target
-            target_x, target_y = self.config.get_grid_center(self.target_grid_pos)
-            dx = target_x - self.x
-            dy = target_y - self.y
-            distance = (dx**2 + dy**2) ** 0.5
-
-            # If we're more than halfway to the target, don't accept new input yet
-            tile_size = self.config.TILE_SIZE
-            if distance > tile_size * 0.4:  # More than 40% of tile away
-                return
-
-            # Use target position as base for next movement
-            new_grid_x, new_grid_y = self.target_grid_pos
-            target_grid_x = new_grid_x + (target_grid_x - self.grid_x)
-            target_grid_y = new_grid_y + (target_grid_y - self.grid_y)
+        if not self.can_accept_input:
+            return
 
         # Only move if position would change
-        if (target_grid_x, target_grid_y) != (new_grid_x, new_grid_y):
+        if (target_grid_x, target_grid_y) != (self.grid_x, self.grid_y):
             # Import logging here to avoid circular imports
             import logging
 
@@ -548,6 +534,8 @@ class Player:
                 f"Player moving to grid position: ({target_grid_x}, {target_grid_y})"
             )
             self.move_to_grid(target_grid_x, target_grid_y, level)
+            # Block further input until we reach the target
+            self.can_accept_input = False
 
     def move_to_grid(self, grid_x: int, grid_y: int, level=None):
         """Move player to specific grid position"""
@@ -634,6 +622,7 @@ class Player:
         self.velocity_y = 0
         self.moving = False
         self.target_grid_pos = None
+        self.can_accept_input = True
 
         # Reset animation
         self.animation_state = AnimationState.IDLE

@@ -355,10 +355,6 @@ class Game:
                 self.player.velocity_y = 0
                 self.player.moving = False
 
-        # Handle movement input
-        keys = pygame.key.get_pressed()
-        self.player.handle_input(keys, self.level)
-
     def handle_editor_events(self, event):
         """Handle events in level editor."""
         if event.type == pygame.KEYDOWN:
@@ -372,6 +368,10 @@ class Game:
         """Update game logic during play."""
         # Update player
         self.player.update(delta_time)
+
+        # Handle movement input AFTER update so we can immediately queue next movement
+        keys = pygame.key.get_pressed()
+        self.player.handle_input(keys, self.level)
 
         # Update score system
         self.score_system.update(delta_time)
