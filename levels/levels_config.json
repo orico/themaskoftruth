@@ -11,14 +11,19 @@
       "name": "The Floor Is a Lie - Level 1"
     },
     {
-    "id": "level2",
-    "file": "level0.json",
-    "name": "The Floor Is a Lie - Level 2"
+      "id": "level2",
+      "file": "level4.json",
+      "name": "The Floor Is a Lie - Level 2"
     },
     {
       "id": "level3",
-      "file": "level3.json",
+      "file": "level0.json",
       "name": "The Floor Is a Lie - Level 3"
+    },
+    {
+      "id": "level4",
+      "file": "level3.json",
+      "name": "The Floor Is a Lie - Level 4"
     }
     
   ]
