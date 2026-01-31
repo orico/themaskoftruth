@@ -246,7 +246,7 @@ class Player:
             rows=6,
             cols=6,
             frame_indices=list(range(36)),  # Use all 36 frames
-            frame_duration=0.08,  # Fast running animation
+            frame_duration=0.04,  # 50% faster running animation
             loop=True,
         )
 
@@ -368,6 +368,11 @@ class Player:
                 # Update grid position (for collision detection)
                 self.grid_x = int(self.x // self.config.TILE_SIZE)
                 self.grid_y = int(self.y // self.config.TILE_SIZE)
+        else:
+            # No target - ensure we can accept input
+            # This handles edge cases where movement was blocked or cancelled
+            if not self.moving:
+                self.can_accept_input = True
 
         # Track time since movement stopped (for delayed idle transition)
         if self.moving:
@@ -533,12 +538,18 @@ class Player:
             logger.debug(
                 f"Player moving to grid position: ({target_grid_x}, {target_grid_y})"
             )
-            self.move_to_grid(target_grid_x, target_grid_y, level)
-            # Block further input until we reach the target
-            self.can_accept_input = False
+            # Try to move - only block input if move was successful
+            move_successful = self.move_to_grid(target_grid_x, target_grid_y, level)
+            if move_successful:
+                # Block further input until we reach the target
+                self.can_accept_input = False
 
     def move_to_grid(self, grid_x: int, grid_y: int, level=None):
-        """Move player to specific grid position"""
+        """Move player to specific grid position
+
+        Returns:
+            bool: True if the move was initiated successfully, False otherwise
+        """
         # Validate bounds
         if (
             0 <= grid_x < self.config.GRID_WIDTH
@@ -548,6 +559,8 @@ class Player:
             if level is None or level.is_walkable((grid_x, grid_y), self.mask_active):
                 self.target_grid_pos = (grid_x, grid_y)
                 self.moving = True
+                return True
+        return False
 
     def toggle_mask(self):
         """Toggle mask on/off"""
