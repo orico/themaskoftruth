@@ -250,24 +250,26 @@ class Player:
         )
 
         # Create walk forward animation (for moving down)
+        # Use 6 evenly spaced frames to complete in ~0.2 seconds (one tile movement)
         walk_forward_sprite = asset_manager.get_sprite("player_walk_forward")
         self.walk_forward_animation = Animation(
             walk_forward_sprite,
             rows=6,
             cols=6,
-            frame_indices=list(range(36)),  # Use all 36 frames
-            frame_duration=0.08,  # Same timing as running animation
+            frame_indices=[0, 6, 12, 18, 24, 30],  # Every 6th frame for smooth motion
+            frame_duration=0.033,  # ~0.2 seconds total (6 frames * 0.033)
             loop=True,
         )
 
         # Create walk backward animation (for moving up)
+        # Use 6 evenly spaced frames to complete in ~0.2 seconds (one tile movement)
         walk_backward_sprite = asset_manager.get_sprite("player_walk_backward")
         self.walk_backward_animation = Animation(
             walk_backward_sprite,
             rows=6,
             cols=6,
-            frame_indices=list(range(36)),  # Use all 36 frames
-            frame_duration=0.08,  # Same timing as running animation
+            frame_indices=[0, 6, 12, 18, 24, 30],  # Every 6th frame for smooth motion
+            frame_duration=0.033,  # ~0.2 seconds total (6 frames * 0.033)
             loop=True,
         )
 
@@ -382,33 +384,29 @@ class Player:
         if self.animation_state == AnimationState.IDLE:
             # In idle state, loop idle animation
             if is_actively_moving:
-                # Start moving - transition to running
-                self.animation_state = AnimationState.TRANSITIONING_TO_RUN
-                self.current_animation = self.transition_animation
-                self.current_animation.play()
+                # Start moving - check direction to determine animation
+                if self.movement_direction == "up":
+                    # Go directly to walk backward animation (no transition)
+                    self.animation_state = AnimationState.RUNNING
+                    self.current_animation = self.walk_backward_animation
+                    self.current_animation.play()
+                elif self.movement_direction == "down":
+                    # Go directly to walk forward animation (no transition)
+                    self.animation_state = AnimationState.RUNNING
+                    self.current_animation = self.walk_forward_animation
+                    self.current_animation.play()
+                else:
+                    # Horizontal movement - use transition animation
+                    self.animation_state = AnimationState.TRANSITIONING_TO_RUN
+                    self.current_animation = self.transition_animation
+                    self.current_animation.play()
 
         elif self.animation_state == AnimationState.TRANSITIONING_TO_RUN:
-            # Playing transition animation
+            # Playing transition animation (only used for horizontal movement)
             if self.current_animation.is_completed():
-                # Transition complete - switch to appropriate running animation
-                # based on direction
-                import logging
-
-                logger = logging.getLogger(__name__)
-                logger.info(
-                    f"Transition complete, movement_direction: {self.movement_direction}"
-                )
-
+                # Transition complete - switch to running animation
                 self.animation_state = AnimationState.RUNNING
-                if self.movement_direction == "up":
-                    self.current_animation = self.walk_backward_animation
-                    logger.info("Switching to walk_backward_animation")
-                elif self.movement_direction == "down":
-                    self.current_animation = self.walk_forward_animation
-                    logger.info("Switching to walk_forward_animation")
-                else:  # horizontal or None
-                    self.current_animation = self.running_animation
-                    logger.info("Switching to running_animation")
+                self.current_animation = self.running_animation
                 self.current_animation.play()
             elif not is_actively_moving:
                 # Movement stopped during transition - reverse back to idle
@@ -434,10 +432,18 @@ class Player:
                     self.current_animation.play()
 
             if not is_actively_moving:
-                # Stop moving - transition back to idle (after delay)
-                self.animation_state = AnimationState.TRANSITIONING_TO_IDLE
-                self.current_animation = self.running_animation
-                self.current_animation.play(reverse=True)
+                # Stop moving - check if we need transition or go directly to idle
+                if self.movement_direction in ("up", "down"):
+                    # For vertical movement, go directly to idle (no transition)
+                    self.animation_state = AnimationState.IDLE
+                    self.current_animation = self.idle_animation
+                    self.current_animation.play()
+                    self.movement_direction = None
+                else:
+                    # For horizontal movement, use transition back to idle
+                    self.animation_state = AnimationState.TRANSITIONING_TO_IDLE
+                    self.current_animation = self.transition_animation
+                    self.current_animation.play(reverse=True)
 
         elif self.animation_state == AnimationState.TRANSITIONING_TO_IDLE:
             # Playing reverse animation
@@ -500,19 +506,11 @@ class Player:
             # Keep current facing direction for up/down movement
             movement_key_detected = True
             self.movement_direction = "up"
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.info("UP key pressed, setting movement_direction to 'up'")
         elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
             target_grid_y += 1
             # Keep current facing direction for up/down movement
             movement_key_detected = True
             self.movement_direction = "down"
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.info("DOWN key pressed, setting movement_direction to 'down'")
 
         # Update movement keys pressed state
         self.movement_keys_pressed = movement_key_detected

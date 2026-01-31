@@ -87,13 +87,13 @@ class AssetManager:
     def _preload_sounds(self):
         """Preload all sound effects."""
         sound_files = {
-            "fake_tile_fall": "sound/audio-Shattered-glass.mp3",
-            "fake_tile_fall_thump": "sound/audio-falling-sound-ending-with-a-thump.mp3",
+            "fake_tile_fall": "sound/aww.mp3",
+            "fake_tile_fall_thump": "sound/aww.mp3",
             "level_complete": "sound/audio-multiple-instruments-in-an-orchestra-doing-"
             "for-lev.mp3",
             "mask_activate": "sound/audio-mortal-kombat-announcer-shouting-.mp3",
-            "mask_ready": "sprites/mask-ready.mp3",
-            "mask_recharging": "sprites/mask-recharging.mp3",
+            "mask_ready": "sound/mask-ready.mp3",
+            "mask_recharging": "sound/mask-recharging.mp3",
             "reach_the_exit": "sound/reach-the-exit_speed_25pct.mp3",
         }
 
