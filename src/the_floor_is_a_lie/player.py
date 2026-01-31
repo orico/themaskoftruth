@@ -205,13 +205,13 @@ class Player:
         # Keyframe indices: use every 6th frame (0, 6, 12, 18, 24, 30)
         keyframe_indices = [0, 6, 12, 18, 24, 30]
 
-        # Create idle animation (just frames 0 and 6 - subtle breathing)
+        # Create idle animation (full 36-frame cycle)
         self.idle_animation = Animation(
-            "sprites/idle-to-running.png",
+            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (3).png",
             rows=6,
             cols=6,
-            frame_indices=[0, 6],
-            frame_duration=0.3,  # Slow idle breathing
+            frame_indices=list(range(36)),  # Use all 36 frames
+            frame_duration=0.08,  # Smooth idle animation cycle
             loop=True,
         )
 
