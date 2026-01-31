@@ -14,6 +14,12 @@
       "id": "level2",
       "file": "level2.json",
       "name": "The Floor Is a Lie - Level 2"
+    },
+    {
+      "id": "level3",
+      "file": "level3.json",
+      "name": "The Floor Is a Lie - Level 3"
     }
+    
   ]
 }
