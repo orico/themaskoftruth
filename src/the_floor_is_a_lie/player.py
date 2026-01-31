@@ -492,6 +492,16 @@ class Player:
 
     def handle_input(self, keys, level=None):
         """Handle keyboard input for movement"""
+        # Block movement input during mask animations
+        if self.animation_state in (
+            AnimationState.MASK_ACTIVATING,
+            AnimationState.MASK_ACTIVE,
+            AnimationState.MASK_DEACTIVATING,
+        ):
+            # Clear movement keys pressed state during mask animations
+            self.movement_keys_pressed = False
+            return
+
         # Track if any movement keys are currently pressed
         movement_key_detected = False
         target_grid_x, target_grid_y = self.grid_x, self.grid_y
