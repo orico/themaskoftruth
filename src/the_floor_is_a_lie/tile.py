@@ -41,6 +41,53 @@ class Tile:
             TileType.EXIT: config.TILE_EXIT_COLOR,
         }
 
+        # Load tile sprites (preload both for efficiency)
+        self.real_sprite = None
+        self.fake_sprite = None
+        self._load_sprites()
+
+    def _load_sprites(self):
+        """Load and scale tile sprites"""
+        tile_size = self.config.TILE_SIZE
+
+        # Load real tile sprite
+        try:
+            real_sprite = pygame.image.load(
+                "sprites/gen-df79415f-5e74-4ac9-86f6-5ee620955741.png"
+            ).convert_alpha()
+            sprite_width = real_sprite.get_width()
+            sprite_height = real_sprite.get_height()
+            scale_x = tile_size / sprite_width
+            scale_y = tile_size / sprite_height
+            scale = min(scale_x, scale_y)
+            new_width = int(sprite_width * scale)
+            new_height = int(sprite_height * scale)
+            self.real_sprite = pygame.transform.scale(
+                real_sprite, (new_width, new_height)
+            )
+        except pygame.error as e:
+            print(f"Failed to load real tile sprite: {e}")
+            self.real_sprite = None
+
+        # Load fake tile sprite
+        try:
+            fake_sprite = pygame.image.load(
+                "sprites/gen-9468de96-df80-4f4d-b92f-4a063b5c86b5.png"
+            ).convert_alpha()
+            sprite_width = fake_sprite.get_width()
+            sprite_height = fake_sprite.get_height()
+            scale_x = tile_size / sprite_width
+            scale_y = tile_size / sprite_height
+            scale = min(scale_x, scale_y)
+            new_width = int(sprite_width * scale)
+            new_height = int(sprite_height * scale)
+            self.fake_sprite = pygame.transform.scale(
+                fake_sprite, (new_width, new_height)
+            )
+        except pygame.error as e:
+            print(f"Failed to load fake tile sprite: {e}")
+            self.fake_sprite = None
+
     def is_walkable(self, mask_active: bool = False) -> bool:
         """Check if tile is walkable given mask state"""
         if self.type == TileType.EMPTY:
@@ -78,11 +125,39 @@ class Tile:
         """Render the tile"""
         color = self.get_display_color(mask_active)
 
-        # Draw tile rectangle
+        # Draw tile rectangle (background)
         rect = pygame.Rect(
             self.screen_x, self.screen_y, self.config.TILE_SIZE, self.config.TILE_SIZE
         )
         pygame.draw.rect(screen, color, rect)
+
+        # Draw sprite if available
+        # When mask is inactive, fake tiles appear as real tiles (show real sprite)
+        # When mask is active, fake tiles show their true appearance (show fake sprite)
+        display_sprite = None
+        if self.type == TileType.REAL:
+            display_sprite = self.real_sprite
+        elif self.type == TileType.FAKE:
+            if mask_active:
+                display_sprite = (
+                    self.fake_sprite
+                )  # Show fake sprite when mask is active
+            else:
+                display_sprite = (
+                    self.real_sprite
+                )  # Show real sprite when mask is inactive
+
+        if display_sprite:
+            # Center the sprite in the tile
+            sprite_x = (
+                self.screen_x
+                + (self.config.TILE_SIZE - display_sprite.get_width()) // 2
+            )
+            sprite_y = (
+                self.screen_y
+                + (self.config.TILE_SIZE - display_sprite.get_height()) // 2
+            )
+            screen.blit(display_sprite, (sprite_x, sprite_y))
 
         # Draw grid lines
         pygame.draw.rect(screen, (60, 60, 80), rect, 1)
