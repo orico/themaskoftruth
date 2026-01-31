@@ -53,6 +53,8 @@ class UI:
         self.level_clear_sprite_loaded = False
         self.star_sprite = None
         self.star_sprite_loaded = False
+        self.main_menu_sprite = None
+        self.main_menu_sprite_loaded = False
 
         # Level clear text elements
         self.level_clear_texts = []
@@ -74,6 +76,7 @@ class UI:
         self.load_game_over_sprite()
         self.load_level_clear_sprite()
         self.load_star_sprite()
+        self.load_main_menu_sprite()
 
     def update_color_cycle(self, delta_time: float):
         """Update the color cycling for the 'Push The Any Key' text"""
@@ -190,6 +193,18 @@ class UI:
         except (pygame.error, FileNotFoundError) as e:
             logger.warning(f"Failed to load star sprite: {e}")
             self.star_sprite_loaded = False
+
+    def load_main_menu_sprite(self):
+        """Load the main menu sprite"""
+        try:
+            self.main_menu_sprite = pygame.image.load(
+                "sprites/main-menu.png"
+            ).convert_alpha()
+            self.main_menu_sprite_loaded = True
+            logger.info("Main menu sprite loaded successfully")
+        except (pygame.error, FileNotFoundError) as e:
+            logger.warning(f"Failed to load main menu sprite: {e}")
+            self.main_menu_sprite_loaded = False
 
     def create_ui_elements(self):
         """Create initial UI elements"""
@@ -336,6 +351,25 @@ class UI:
                     "Push The Any Key", True, self.current_color
                 )
                 screen.blit(press_key_text, self.press_key_position)
+
+    def render_main_menu(self, screen: pygame.Surface):
+        """Render the main menu sprite and 'Push Any Key' text"""
+        if self.main_menu_sprite_loaded:
+            # Center the sprite on screen
+            sprite_x = (
+                self.config.SCREEN_WIDTH // 2 - self.main_menu_sprite.get_width() // 2
+            )
+            sprite_y = (
+                self.config.SCREEN_HEIGHT // 2 - self.main_menu_sprite.get_height() // 2
+            )
+            screen.blit(self.main_menu_sprite, (sprite_x, sprite_y))
+
+        # Render "Push Any Key" text with cycling colors in the center bottom
+        medium_font = self.config.get_font("medium")
+        press_key_text = medium_font.render("Push Any Key", True, self.current_color)
+        text_x = self.config.SCREEN_WIDTH // 2 - press_key_text.get_width() // 2
+        text_y = self.config.SCREEN_HEIGHT - 275  # Position 175 pixels up from bottom
+        screen.blit(press_key_text, (text_x, text_y))
 
     def show_win_screen(self, score_system: ScoreSystem):
         """Show victory screen with level clear sprite and overlaid text"""

@@ -54,7 +54,7 @@ class Game:
             logger.warning(f"Failed to load transparent button theme: {e}")
 
         # Game state
-        self.game_state = "playing"  # menu, playing, game_over, level_editor
+        self.game_state = "menu"  # menu, playing, game_over, level_editor
         self.clock = pygame.time.Clock()
 
         # Level management
@@ -192,9 +192,6 @@ class Game:
             f"Game modules initialized with level {self.current_level_index + 1}"
         )
 
-        # Start background music
-        self.music.play()
-
     def create_default_level(self):
         """Create a basic default level if none exists."""
         import json
@@ -237,7 +234,9 @@ class Game:
                 self.ui.handle_ui_events(event)
 
                 # Handle game-specific events
-                if self.game_state == "playing":
+                if self.game_state == "menu":
+                    self.handle_menu_events(event)
+                elif self.game_state == "playing":
                     self.handle_game_events(event)
                 elif self.game_state == "level_editor":
                     self.handle_editor_events(event)
@@ -273,6 +272,7 @@ class Game:
 
             # Update UI
             self.ui_manager.update(time_delta)
+            # Update color cycle for menu and other states that use it
             self.ui.update_color_cycle(time_delta)
 
             # Render
@@ -281,6 +281,17 @@ class Game:
         logger.info("Game loop ended")
         pygame.quit()
         sys.exit()
+
+    def handle_menu_events(self, event):
+        """Handle events in the main menu."""
+        if event.type == pygame.KEYDOWN:
+            logger.info("Any key pressed in menu - starting game")
+            # Start the game by loading the first level
+            self.initialize_game(level_index=0)
+            self.game_state = "playing"
+            # Start background music now that we're in playing state
+            if self.music:
+                self.music.play()
 
     def handle_game_events(self, event):
         """Handle events during gameplay."""
@@ -403,6 +414,9 @@ class Game:
             self.ui.cleanup()
         self.initialize_game(level_index=current_idx)  # Explicitly pass current level
         self.game_state = "playing"
+        # Start background music
+        if self.music:
+            self.music.play()
 
     def continue_to_next_level(self):
         """Continue to the next level or restart from level 1 if final level."""
@@ -420,6 +434,9 @@ class Game:
             self.initialize_game(level_index=0)
 
         self.game_state = "playing"
+        # Start background music
+        if self.music:
+            self.music.play()
 
     def restart_from_level_1(self):
         """Restart from level 1."""
@@ -430,6 +447,9 @@ class Game:
             self.ui.cleanup()
         self.initialize_game(level_index=0)  # Start from level 1
         self.game_state = "playing"
+        # Start background music
+        if self.music:
+            self.music.play()
 
     def enter_level_editor(self):
         """Switch to level editor mode."""
@@ -451,13 +471,20 @@ class Game:
         if self.level_editor and self.level_editor.modified:
             logger.info("Level was modified, reloading...")
             self.initialize_game()
+            # Start background music
+            if self.music:
+                self.music.play()
 
     def render(self):
         """Render the current game state."""
         logger.debug(f"Rendering game state: {self.game_state}")
         self.screen.fill(self.config.BACKGROUND_COLOR)
 
-        if self.game_state == "playing":
+        if self.game_state == "menu":
+            # Render main menu
+            self.ui.render_main_menu(self.screen)
+
+        elif self.game_state == "playing":
             # Render level
             mask_active = self.player.mask_active if self.player else False
             logger.debug(f"Rendering level with mask_active={mask_active}")
