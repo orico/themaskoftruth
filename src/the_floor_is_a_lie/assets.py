@@ -50,10 +50,13 @@ class AssetManager:
         """Preload all sprite images."""
         sprite_files = {
             # Player animations
-            "player_idle": "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (3).png",
+            "player_idle": "sprites/Direct-overhead-2D-perspective-of-a-young-boy-"
+                           "with-256px-36 (3).png",
             "player_transition": "sprites/transition-from-idle-to-running.png",
-            "player_running": "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (1).png",
-            "player_mask": "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (2).png",
+            "player_running": "sprites/Direct-overhead-2D-perspective-of-a-young-boy-"
+                             "with-256px-36 (1).png",
+            "player_mask": "sprites/Direct-overhead-2D-perspective-of-a-young-boy-"
+                           "with-256px-36 (2).png",
             "player_death": "sprites/falling death.png",
             # Tile sprites
             "tile_real": "sprites/gen-df79415f-5e74-4ac9-86f6-5ee620955741.png",
@@ -84,7 +87,8 @@ class AssetManager:
         sound_files = {
             "fake_tile_fall": "sound/audio-Shattered-glass.mp3",
             "fake_tile_fall_thump": "sound/audio-falling-sound-ending-with-a-thump.mp3",
-            "level_complete": "sound/audio-multiple-instruments-in-an-orchestra-doing-for-lev.mp3",
+            "level_complete": "sound/audio-multiple-instruments-in-an-orchestra-doing-"
+                             "for-lev.mp3",
             "mask_activate": "sound/audio-mortal-kombat-announcer-shouting-.mp3",
             "reach_the_exit": "sound/reach-the-exit_speed_25pct.mp3",
         }
