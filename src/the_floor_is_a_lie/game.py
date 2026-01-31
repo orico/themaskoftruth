@@ -15,7 +15,12 @@ from .music import Music
 from .player import Player
 from .score import ScoreSystem
 from .sound_effects import SoundEffects
-from .ui import RESTART_FROM_LEVEL_1_EVENT, RESTART_GAME_EVENT, CONTINUE_TO_NEXT_LEVEL_EVENT, UI
+from .ui import (
+    CONTINUE_TO_NEXT_LEVEL_EVENT,
+    RESTART_FROM_LEVEL_1_EVENT,
+    RESTART_GAME_EVENT,
+    UI,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -319,7 +324,9 @@ class Game:
                 logger.info("C key pressed - cheat: teleporting to yellow block (exit)")
                 # Teleport player instantly to exit position
                 self.player.grid_x, self.player.grid_y = self.level.exit_pos
-                self.player.x, self.player.y = self.config.get_grid_center(self.level.exit_pos)
+                self.player.x, self.player.y = self.config.get_grid_center(
+                    self.level.exit_pos
+                )
                 self.player.target_grid_pos = None
                 self.player.velocity_x = 0
                 self.player.velocity_y = 0

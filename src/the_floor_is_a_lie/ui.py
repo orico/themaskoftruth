@@ -81,7 +81,7 @@ class UI:
 
         self.color_cycle_time += delta_time * self.color_cycle_speed
 
-        # Cycle through neon colors: cyan -> pink -> magenta -> green -> yellow -> blue -> back to cyan
+        # Cycle through neon colors: cyan -> pink -> magenta -> green
         cycle_position = self.color_cycle_time % (2 * math.pi)  # 0 to 2π
 
         # Use sine waves to create smooth color transitions
@@ -182,9 +182,7 @@ class UI:
     def load_star_sprite(self):
         """Load the star sprite for ratings"""
         try:
-            self.star_sprite = pygame.image.load(
-                "sprites/star2.png"
-            ).convert_alpha()
+            self.star_sprite = pygame.image.load("sprites/star2.png").convert_alpha()
             # Set black as transparent color in case alpha channel isn't properly set
             self.star_sprite.set_colorkey((0, 0, 0))
             self.star_sprite_loaded = True
@@ -327,14 +325,16 @@ class UI:
         if self.level_clear_sprite_loaded and hasattr(self, "level_clear_sprite_rect"):
             screen.blit(self.level_clear_sprite, self.level_clear_sprite_rect)
 
-            # Render overlaid text and sprite elements (excluding dynamic "Push The Any Key" text)
+            # Render overlaid text and sprite elements (excluding dynamic text)
             for element, position in self.level_clear_texts:
                 screen.blit(element, position)
 
             # Render dynamic "Push The Any Key" text with cycling colors
             if hasattr(self, "press_key_position"):
                 small_font = self.config.get_font("medium")
-                press_key_text = small_font.render("Push The Any Key", True, self.current_color)
+                press_key_text = small_font.render(
+                    "Push The Any Key", True, self.current_color
+                )
                 screen.blit(press_key_text, self.press_key_position)
 
     def show_win_screen(self, score_system: ScoreSystem):
@@ -376,7 +376,7 @@ class UI:
             text_y += 35
 
         # Add stars with "Stars:" label
-        if self.star_sprite_loaded and score_summary['stars_count'] > 0:
+        if self.star_sprite_loaded and score_summary["stars_count"] > 0:
             # Render "Stars:" text
             stars_label = small_font.render("Stars:", True, (255, 255, 255))
             label_x = self.config.SCREEN_WIDTH // 2 - stars_label.get_width() // 2 - 50
@@ -393,7 +393,9 @@ class UI:
             scaled_star_height = text_height
 
             # Create transparent star surface to ensure background is transparent
-            scaled_star = pygame.transform.scale(self.star_sprite, (scaled_star_width, scaled_star_height))
+            scaled_star = pygame.transform.scale(
+                self.star_sprite, (scaled_star_width, scaled_star_height)
+            )
             # Ensure the scaled surface maintains transparency
             scaled_star.set_colorkey((0, 0, 0))
 
@@ -402,7 +404,7 @@ class UI:
             start_x = label_end_x + 20  # 20px gap between label and stars
             star_spacing = 10  # 10px spacing between stars
 
-            for i in range(score_summary['stars_count']):
+            for i in range(score_summary["stars_count"]):
                 star_x = start_x + (scaled_star_width + star_spacing) * i
                 self.level_clear_texts.append((scaled_star, (star_x, text_y)))
 
@@ -436,7 +438,7 @@ class UI:
             manager=self.ui_manager,
         )
 
-        # Store position for dynamic "Push The Any Key" text (rendered separately with cycling colors)
+        # Store position for dynamic "Push The Any Key" text
         dummy_text = small_font.render("Push The Any Key", True, (200, 200, 200))
         key_text_x = self.config.SCREEN_WIDTH // 2 - dummy_text.get_width() // 2
         key_text_y = button_y + 60 - 100  # Position below buttons, moved up 100 pixels
