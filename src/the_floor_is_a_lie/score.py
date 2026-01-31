@@ -130,6 +130,7 @@ class ScoreSystem:
             "time": self.get_time_formatted(self.final_time),
             "mask_uses": self.final_mask_uses,
             "stars": self.get_star_display(),
+            "stars_count": self.stars,
             "rating": self.get_performance_rating(),
             "time_thresholds": [
                 self.get_time_formatted(t) for t in self.time_thresholds

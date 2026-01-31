@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # So we need to start our custom events after that range
 RESTART_GAME_EVENT = pygame.USEREVENT + 100
 RESTART_FROM_LEVEL_1_EVENT = pygame.USEREVENT + 101
+CONTINUE_TO_NEXT_LEVEL_EVENT = pygame.USEREVENT + 102
 
 
 class UI:
@@ -43,10 +44,23 @@ class UI:
         self.restart_button = None
         self.restart_level_1_button = None
         self.editor_button = None
+        self.continue_button = None
 
         # Sprites for result screens
         self.game_over_sprite = None
         self.game_over_sprite_loaded = False
+        self.level_clear_sprite = None
+        self.level_clear_sprite_loaded = False
+        self.star_sprite = None
+        self.star_sprite_loaded = False
+
+        # Level clear text elements
+        self.level_clear_texts = []
+
+        # Color cycling for "Push The Any Key" text
+        self.color_cycle_time = 0.0
+        self.color_cycle_speed = 2.0  # Speed of color transition
+        self.current_color = (0, 255, 255)  # Start with cyan
 
         # Mask image for display
         self.mask_image = None
@@ -58,6 +72,59 @@ class UI:
         self.create_ui_elements()
         self.load_mask_image()
         self.load_game_over_sprite()
+        self.load_level_clear_sprite()
+        self.load_star_sprite()
+
+    def update_color_cycle(self, delta_time: float):
+        """Update the color cycling for the 'Push The Any Key' text"""
+        import math
+
+        self.color_cycle_time += delta_time * self.color_cycle_speed
+
+        # Cycle through neon colors: cyan -> pink -> magenta -> green -> yellow -> blue -> back to cyan
+        cycle_position = self.color_cycle_time % (2 * math.pi)  # 0 to 2π
+
+        # Use sine waves to create smooth color transitions
+        # Cyan to Pink: R increases, G stays high, B decreases
+        # Pink to Magenta: R stays high, G decreases, B increases slightly
+        # Magenta to Green: R decreases, G increases, B decreases
+        # Green to Yellow: R increases, G stays high, B stays low
+        # Yellow to Blue: R decreases, G decreases, B increases
+        # Blue to Cyan: R stays low, G increases, B stays high
+
+        # Simplified approach: cycle through primary neon colors
+        if cycle_position < math.pi / 3:  # Cyan to Pink
+            t = cycle_position / (math.pi / 3)
+            r = int(255 * t)  # 0 -> 255
+            g = 255
+            b = int(255 * (1 - t))  # 255 -> 0
+        elif cycle_position < 2 * math.pi / 3:  # Pink to Magenta
+            t = (cycle_position - math.pi / 3) / (math.pi / 3)
+            r = 255
+            g = int(255 * (1 - t))  # 255 -> 0
+            b = int(255 * t)  # 0 -> 255
+        elif cycle_position < math.pi:  # Magenta to Green
+            t = (cycle_position - 2 * math.pi / 3) / (math.pi / 3)
+            r = int(255 * (1 - t))  # 255 -> 0
+            g = int(255 * t)  # 0 -> 255
+            b = 255
+        elif cycle_position < 4 * math.pi / 3:  # Green to Yellow
+            t = (cycle_position - math.pi) / (math.pi / 3)
+            r = int(255 * t)  # 0 -> 255
+            g = 255
+            b = int(255 * (1 - t))  # 255 -> 0
+        elif cycle_position < 5 * math.pi / 3:  # Yellow to Blue
+            t = (cycle_position - 4 * math.pi / 3) / (math.pi / 3)
+            r = int(255 * (1 - t))  # 255 -> 0
+            g = int(255 * (1 - t))  # 255 -> 0
+            b = 255
+        else:  # Blue to Cyan
+            t = (cycle_position - 5 * math.pi / 3) / (math.pi / 3)
+            r = 0
+            g = int(255 * t)  # 0 -> 255
+            b = 255
+
+        self.current_color = (r, g, b)
 
     def load_mask_image(self):
         """Load the mask display image and create small icon"""
@@ -99,6 +166,32 @@ class UI:
         except (pygame.error, FileNotFoundError) as e:
             logger.warning(f"Failed to load game over sprite: {e}")
             self.game_over_sprite_loaded = False
+
+    def load_level_clear_sprite(self):
+        """Load the level clear menu sprite"""
+        try:
+            self.level_clear_sprite = pygame.image.load(
+                "sprites/level-clear.png"
+            ).convert_alpha()
+            self.level_clear_sprite_loaded = True
+            logger.info("Level clear sprite loaded successfully")
+        except (pygame.error, FileNotFoundError) as e:
+            logger.warning(f"Failed to load level clear sprite: {e}")
+            self.level_clear_sprite_loaded = False
+
+    def load_star_sprite(self):
+        """Load the star sprite for ratings"""
+        try:
+            self.star_sprite = pygame.image.load(
+                "sprites/star2.png"
+            ).convert_alpha()
+            # Set black as transparent color in case alpha channel isn't properly set
+            self.star_sprite.set_colorkey((0, 0, 0))
+            self.star_sprite_loaded = True
+            logger.info("Star sprite loaded successfully")
+        except (pygame.error, FileNotFoundError) as e:
+            logger.warning(f"Failed to load star sprite: {e}")
+            self.star_sprite_loaded = False
 
     def create_ui_elements(self):
         """Create initial UI elements"""
@@ -229,63 +322,156 @@ class UI:
         if self.game_over_sprite_loaded and hasattr(self, "game_over_sprite_rect"):
             screen.blit(self.game_over_sprite, self.game_over_sprite_rect)
 
+    def render_level_clear_sprite(self, screen: pygame.Surface):
+        """Render the level clear sprite and overlaid text/sprite elements"""
+        if self.level_clear_sprite_loaded and hasattr(self, "level_clear_sprite_rect"):
+            screen.blit(self.level_clear_sprite, self.level_clear_sprite_rect)
+
+            # Render overlaid text and sprite elements (excluding dynamic "Push The Any Key" text)
+            for element, position in self.level_clear_texts:
+                screen.blit(element, position)
+
+            # Render dynamic "Push The Any Key" text with cycling colors
+            if hasattr(self, "press_key_position"):
+                small_font = self.config.get_font("medium")
+                press_key_text = small_font.render("Push The Any Key", True, self.current_color)
+                screen.blit(press_key_text, self.press_key_position)
+
     def show_win_screen(self, score_system: ScoreSystem):
-        """Show victory screen"""
+        """Show victory screen with level clear sprite and overlaid text"""
         score_summary = score_system.get_score_summary()
 
-        # Create result panel
-        panel_rect = pygame.Rect(
-            (self.config.SCREEN_WIDTH // 2 - 200, self.config.SCREEN_HEIGHT // 2 - 150),
-            (400, 300),
+        # Position sprite in center of screen
+        sprite_x = (
+            self.config.SCREEN_WIDTH // 2 - self.level_clear_sprite.get_width() // 2
+        )
+        sprite_y = (
+            self.config.SCREEN_HEIGHT // 2 - self.level_clear_sprite.get_height() // 2
+        )
+        self.level_clear_sprite_rect = pygame.Rect(
+            sprite_x,
+            sprite_y,
+            self.level_clear_sprite.get_width(),
+            self.level_clear_sprite.get_height(),
         )
 
-        self.result_panel = pygame_gui.elements.UIPanel(
-            relative_rect=panel_rect, manager=self.ui_manager
-        )
+        # Create text surfaces for overlay
+        self.level_clear_texts = []
 
-        # Title
-        title_rect = pygame.Rect((0, 10), (400, 40))
-        self.win_text = pygame_gui.elements.UILabel(
-            relative_rect=title_rect,
-            text="LEVEL COMPLETE!",
-            manager=self.ui_manager,
-            container=self.result_panel,
-        )
-
-        # Score details
-        y_offset = 60
+        # Score details - position them in the middle of the sprite
+        small_font = self.config.get_font("medium")
         details = [
             f"Time: {score_summary['time']}",
             f"Mask Uses: {score_summary['mask_uses']}",
-            f"Stars: {score_summary['stars']}",
             f"Rating: {score_summary['rating']}",
         ]
 
-        for detail in details:
-            detail_rect = pygame.Rect((20, y_offset), (360, 30))
-            pygame_gui.elements.UILabel(
-                relative_rect=detail_rect,
-                text=detail,
-                manager=self.ui_manager,
-                container=self.result_panel,
-            )
-            y_offset += 35
+        text_y = sprite_y + self.level_clear_sprite.get_height() // 2 - 40
 
-        # Buttons
-        button_y = y_offset + 20
+        # Add time and mask uses as text
+        for detail in details:
+            detail_text = small_font.render(detail, True, (255, 255, 255))
+            detail_x = self.config.SCREEN_WIDTH // 2 - detail_text.get_width() // 2
+            self.level_clear_texts.append((detail_text, (detail_x, text_y)))
+            text_y += 35
+
+        # Add stars with "Stars:" label
+        if self.star_sprite_loaded and score_summary['stars_count'] > 0:
+            # Render "Stars:" text
+            stars_label = small_font.render("Stars:", True, (255, 255, 255))
+            label_x = self.config.SCREEN_WIDTH // 2 - stars_label.get_width() // 2 - 50
+            self.level_clear_texts.append((stars_label, (label_x, text_y)))
+
+            # Calculate star size to match text height
+            text_height = small_font.get_height()
+            star_width = self.star_sprite.get_width()
+            star_height = self.star_sprite.get_height()
+
+            # Scale to match text height while maintaining aspect ratio
+            scale_factor = text_height / star_height
+            scaled_star_width = int(star_width * scale_factor)
+            scaled_star_height = text_height
+
+            # Create transparent star surface to ensure background is transparent
+            scaled_star = pygame.transform.scale(self.star_sprite, (scaled_star_width, scaled_star_height))
+            # Ensure the scaled surface maintains transparency
+            scaled_star.set_colorkey((0, 0, 0))
+
+            # Position stars to the right of the label
+            label_end_x = label_x + stars_label.get_width()
+            start_x = label_end_x + 20  # 20px gap between label and stars
+            star_spacing = 10  # 10px spacing between stars
+
+            for i in range(score_summary['stars_count']):
+                star_x = start_x + (scaled_star_width + star_spacing) * i
+                self.level_clear_texts.append((scaled_star, (star_x, text_y)))
+
+        # Position buttons from the bottom of the sprite
+        sprite_height = self.level_clear_sprite.get_height()
+        button_y = (
+            sprite_y + sprite_height - 50 - 100 - 75 + 50 - 25
+        )  # Position from bottom of sprite, 100 + 75 higher, then 50 down, then 25 up
+
         self.restart_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((50, button_y), (120, 40)),
-            text="Restart (R)",
+            relative_rect=pygame.Rect(
+                (sprite_x + 50 + 100 + 50 + 25 - 10, button_y), (130, 40)
+            ),
+            text="Try Again",
             manager=self.ui_manager,
-            container=self.result_panel,
+        )
+
+        self.continue_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                (sprite_x + 200 + 100 - 50 + 20 - 10, button_y), (120, 40)
+            ),
+            text="Continue",
+            manager=self.ui_manager,
         )
 
         self.editor_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((200, button_y), (150, 40)),
-            text="Level Editor (E)",
+            relative_rect=pygame.Rect(
+                (sprite_x + 350 + 300 - 50 + 20 - 10, button_y), (150, 40)
+            ),
+            text="Level Editor",
             manager=self.ui_manager,
-            container=self.result_panel,
         )
+
+        # Store position for dynamic "Push The Any Key" text (rendered separately with cycling colors)
+        dummy_text = small_font.render("Push The Any Key", True, (200, 200, 200))
+        key_text_x = self.config.SCREEN_WIDTH // 2 - dummy_text.get_width() // 2
+        key_text_y = button_y + 60 - 100  # Position below buttons, moved up 100 pixels
+        self.press_key_position = (key_text_x, key_text_y)
+
+        # Make buttons transparent by overriding all appearance
+        def make_transparent(button):
+            if button:
+                # Create a fully transparent surface for the button background
+                transparent_bg = pygame.Surface(
+                    (button.rect.width, button.rect.height), pygame.SRCALPHA
+                )
+                transparent_bg.fill((0, 0, 0, 0))
+                button.set_image(transparent_bg)
+
+                # Override text color to white
+                button.text_colour = pygame.Color(255, 255, 255, 255)
+
+                # Disable the default button appearance completely
+                button.shape = "rectangle"
+                button.colours = button.colours.copy()
+                # Set all background colors to transparent
+                for key in button.colours:
+                    if "bg" in key:
+                        button.colours[key] = pygame.Color(0, 0, 0, 0)
+                    elif "border" in key:
+                        button.colours[key] = pygame.Color(0, 0, 0, 0)
+                    elif "text" in key:
+                        button.colours[key] = pygame.Color(255, 255, 255, 255)
+
+                button.rebuild()
+
+        make_transparent(self.restart_button)
+        make_transparent(self.continue_button)
+        make_transparent(self.editor_button)
 
     def show_game_over_screen(self, score_system: ScoreSystem):
         """Show game over screen"""
@@ -370,13 +556,21 @@ class UI:
         if self.restart_level_1_button:
             self.restart_level_1_button.kill()
             self.restart_level_1_button = None
+        if self.continue_button:
+            self.continue_button.kill()
+            self.continue_button = None
         if self.editor_button:
             self.editor_button.kill()
             self.editor_button = None
 
-        # Clean up sprite-related attributes
+        # Clean up sprite-related attributes and text
         if hasattr(self, "game_over_sprite_rect"):
             delattr(self, "game_over_sprite_rect")
+        if hasattr(self, "level_clear_sprite_rect"):
+            delattr(self, "level_clear_sprite_rect")
+        if hasattr(self, "press_key_position"):
+            delattr(self, "press_key_position")
+        self.level_clear_texts = []
 
     def cleanup(self):
         """Clean up all UI elements"""
@@ -412,6 +606,10 @@ class UI:
                     logger.info("Restart from Level 1 button clicked")
                     # Trigger restart from level 1 (handled in main game loop)
                     pygame.event.post(pygame.event.Event(RESTART_FROM_LEVEL_1_EVENT))
+                elif self.continue_button and event.ui_element == self.continue_button:
+                    logger.info("Continue button clicked - loading next level")
+                    # Trigger continue to next level (handled in main game loop)
+                    pygame.event.post(pygame.event.Event(CONTINUE_TO_NEXT_LEVEL_EVENT))
                 elif self.editor_button and event.ui_element == self.editor_button:
                     logger.info("Level Editor button clicked")
                     # Trigger level editor (handled in main game loop)

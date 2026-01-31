@@ -15,7 +15,7 @@ from .music import Music
 from .player import Player
 from .score import ScoreSystem
 from .sound_effects import SoundEffects
-from .ui import RESTART_FROM_LEVEL_1_EVENT, RESTART_GAME_EVENT, UI
+from .ui import RESTART_FROM_LEVEL_1_EVENT, RESTART_GAME_EVENT, CONTINUE_TO_NEXT_LEVEL_EVENT, UI
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +248,17 @@ class Game:
                     elif event.type == RESTART_FROM_LEVEL_1_EVENT:
                         logger.info("Restarting from level 1")
                         self.restart_from_level_1()
+                    elif event.type == CONTINUE_TO_NEXT_LEVEL_EVENT:
+                        logger.info("Continuing to next level")
+                        self.continue_to_next_level()
+                elif self.game_state == "level_clear":
+                    # Handle any key press to continue to next level
+                    if event.type == pygame.KEYDOWN:
+                        logger.info("Any key pressed - continuing to next level")
+                        self.continue_to_next_level()
+                    elif event.type == CONTINUE_TO_NEXT_LEVEL_EVENT:
+                        logger.info("Continuing to next level")
+                        self.continue_to_next_level()
 
             # Update game state
             if self.game_state == "playing":
@@ -257,6 +268,7 @@ class Game:
 
             # Update UI
             self.ui_manager.update(time_delta)
+            self.ui.update_color_cycle(time_delta)
 
             # Render
             self.render()
@@ -303,6 +315,15 @@ class Game:
                 logger.info("S key pressed - toggling sound effects mute")
                 if self.sound_effects:
                     self.sound_effects.toggle_mute()
+            elif event.key == pygame.K_c:
+                logger.info("C key pressed - cheat: teleporting to yellow block (exit)")
+                # Teleport player instantly to exit position
+                self.player.grid_x, self.player.grid_y = self.level.exit_pos
+                self.player.x, self.player.y = self.config.get_grid_center(self.level.exit_pos)
+                self.player.target_grid_pos = None
+                self.player.velocity_x = 0
+                self.player.velocity_y = 0
+                self.player.moving = False
 
         # Handle movement input
         keys = pygame.key.get_pressed()
@@ -353,15 +374,10 @@ class Game:
 
         self.score_system.complete_level()
 
-        # Check if there's a next level
-        next_level_index = self.get_next_level_index()
-        if next_level_index is not None:
-            logger.info(f"Level completed! Loading next level: {next_level_index + 1}")
-            self.load_next_level()
-        else:
-            logger.info("All levels completed!")
-            self.ui.show_win_screen(self.score_system)
-            self.game_state = "game_over"
+        # Show level clear screen for every level completion
+        logger.info(f"Level {self.current_level_index + 1} completed!")
+        self.ui.show_win_screen(self.score_system)
+        self.game_state = "level_clear"
 
     def game_over(self):
         """Handle game over condition."""
@@ -379,6 +395,23 @@ class Game:
             self.ui.hide_result_screen()
             self.ui.cleanup()
         self.initialize_game(level_index=current_idx)  # Explicitly pass current level
+        self.game_state = "playing"
+
+    def continue_to_next_level(self):
+        """Continue to the next level or restart from level 1 if final level."""
+        # Hide result screen before continuing
+        if self.ui:
+            self.ui.hide_result_screen()
+
+        next_level_index = self.get_next_level_index()
+        if next_level_index is not None:
+            logger.info(f"Continuing to level {next_level_index + 1}")
+            self.initialize_game(level_index=next_level_index)
+        else:
+            # Final level completed - restart from level 1
+            logger.info("All levels completed! Restarting from level 1")
+            self.initialize_game(level_index=0)
+
         self.game_state = "playing"
 
     def restart_from_level_1(self):
@@ -445,6 +478,10 @@ class Game:
         elif self.game_state == "game_over":
             # Render game over sprite
             self.ui.render_game_over_sprite(self.screen)
+
+        elif self.game_state == "level_clear":
+            # Render level clear sprite
+            self.ui.render_level_clear_sprite(self.screen)
 
         # Render UI manager (buttons, dialogs, etc.)
         self.ui_manager.draw_ui(self.screen)
