@@ -238,9 +238,10 @@ class Player:
 
         # Create mask activation/deactivation animation
         # Assuming 6x6 grid (36 frames) for the mask sprite sheet
+        mask_sprite = "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (2).png"
         mask_frame_indices = list(range(36))  # Use all 36 frames sequentially
         self.mask_animation = Animation(
-            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (2).png",
+            mask_sprite,
             rows=6,
             cols=6,
             frame_indices=mask_frame_indices,
