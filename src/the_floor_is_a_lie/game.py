@@ -19,6 +19,7 @@ from .ui import (
     CONTINUE_TO_NEXT_LEVEL_EVENT,
     RESTART_FROM_LEVEL_1_EVENT,
     RESTART_GAME_EVENT,
+    START_MUSIC_EVENT,
     UI,
 )
 
@@ -168,6 +169,9 @@ class Game:
         self.sound_effects.load_sound(
             "mask_activate", "sound/audio-mortal-kombat-announcer-shouting-.mp3"
         )
+        self.sound_effects.load_sound(
+            "reach_the_exit", "sound/reach-the-exit_speed_25pct.mp3"
+        )
 
         # Load levels configuration
         if not self.load_levels_config():
@@ -238,6 +242,12 @@ class Game:
                 # Handle UI-specific events (check all events)
                 self.ui.handle_ui_events(event)
 
+                # Handle start music event (timer after intro sound)
+                if event.type == START_MUSIC_EVENT:
+                    logger.info("Intro sound finished - starting background music")
+                    if self.music:
+                        self.music.play()
+
                 # Handle game-specific events
                 if self.game_state == "menu":
                     self.handle_menu_events(event)
@@ -287,6 +297,13 @@ class Game:
         pygame.quit()
         sys.exit()
 
+    def _start_music_sequence(self):
+        """Start the music sequence: play intro sound first, then music."""
+        if self.sound_effects:
+            self.sound_effects.play_sound("reach_the_exit")
+        # Start music after 2.85s delay (2850ms) - 25% reduction from 3.8s
+        pygame.time.set_timer(START_MUSIC_EVENT, 2850, loops=1)
+
     def handle_menu_events(self, event):
         """Handle events in the main menu."""
         if event.type == pygame.KEYDOWN:
@@ -294,9 +311,8 @@ class Game:
             # Start the game by loading the first level
             self.initialize_game(level_index=0)
             self.game_state = "playing"
-            # Start background music now that we're in playing state
-            if self.music:
-                self.music.play()
+            # Start the music sequence: intro sound first, then music
+            self._start_music_sequence()
 
     def handle_game_events(self, event):
         """Handle events during gameplay."""
@@ -419,9 +435,8 @@ class Game:
             self.ui.cleanup()
         self.initialize_game(level_index=current_idx)  # Explicitly pass current level
         self.game_state = "playing"
-        # Start background music
-        if self.music:
-            self.music.play()
+        # Start the music sequence: intro sound first, then music
+        self._start_music_sequence()
 
     def continue_to_next_level(self):
         """Continue to the next level or restart from level 1 if final level."""
@@ -439,9 +454,8 @@ class Game:
             self.initialize_game(level_index=0)
 
         self.game_state = "playing"
-        # Start background music
-        if self.music:
-            self.music.play()
+        # Start the music sequence: intro sound first, then music
+        self._start_music_sequence()
 
     def restart_from_level_1(self):
         """Restart from level 1."""
@@ -452,9 +466,8 @@ class Game:
             self.ui.cleanup()
         self.initialize_game(level_index=0)  # Start from level 1
         self.game_state = "playing"
-        # Start background music
-        if self.music:
-            self.music.play()
+        # Start the music sequence: intro sound first, then music
+        self._start_music_sequence()
 
     def enter_level_editor(self):
         """Switch to level editor mode."""
@@ -476,9 +489,8 @@ class Game:
         if self.level_editor and self.level_editor.modified:
             logger.info("Level was modified, reloading...")
             self.initialize_game()
-            # Start background music
-            if self.music:
-                self.music.play()
+            # Start the music sequence: intro sound first, then music
+            self._start_music_sequence()
 
     def render(self):
         """Render the current game state."""

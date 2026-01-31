@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 RESTART_GAME_EVENT = pygame.USEREVENT + 100
 RESTART_FROM_LEVEL_1_EVENT = pygame.USEREVENT + 101
 CONTINUE_TO_NEXT_LEVEL_EVENT = pygame.USEREVENT + 102
+START_MUSIC_EVENT = pygame.USEREVENT + 103
 
 
 class MaskTextController:

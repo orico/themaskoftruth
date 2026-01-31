@@ -1,0 +1,7 @@
+# Requirements for audio processing script
+pydub>=0.25.1
+
+# Note: pydub also requires ffmpeg to be installed on your system
+# On macOS: brew install ffmpeg
+# On Ubuntu/Debian: sudo apt install ffmpeg
+# On Windows: Download from https://ffmpeg.org/download.html
