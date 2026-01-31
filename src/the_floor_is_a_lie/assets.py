@@ -58,6 +58,8 @@ class AssetManager:
             # Tile sprites
             "tile_real": "sprites/gen-df79415f-5e74-4ac9-86f6-5ee620955741.png",
             "tile_fake": "sprites/gen-9468de96-df80-4f4d-b92f-4a063b5c86b5.png",
+            "tile_start": "sprites/door.png",
+            "tile_exit": "sprites/open-door.png",
             # UI sprites
             "mask_image": "sprites/gen-a8f9dc3d-d020-40c2-bb6d-22e58d5d0390.png",
             "game_over_menu": "sprites/game-over-menu.png",

@@ -45,6 +45,8 @@ class Tile:
         # Get scaled tile sprites from cache (shared across all tiles)
         self.real_sprite = Tile._get_scaled_sprite("tile_real", config.TILE_SIZE)
         self.fake_sprite = Tile._get_scaled_sprite("tile_fake", config.TILE_SIZE)
+        self.start_sprite = Tile._get_scaled_sprite("tile_start", config.TILE_SIZE)
+        self.exit_sprite = Tile._get_scaled_sprite("tile_exit", config.TILE_SIZE)
 
     # Class-level cache for scaled sprites (shared across all tile instances)
     _scaled_sprite_cache: dict = {}
@@ -147,6 +149,10 @@ class Tile:
                 display_sprite = (
                     self.real_sprite
                 )  # Show real sprite when mask is inactive
+        elif self.type == TileType.START:
+            display_sprite = self.start_sprite
+        elif self.type == TileType.EXIT:
+            display_sprite = self.exit_sprite
 
         if display_sprite:
             # Center the sprite in the tile
