@@ -54,3 +54,6 @@ where = ["src"]
 dev = [
     "pytest>=8.3.5",
 ]
+
+[tool.flake8]
+ignore = ["E501"]

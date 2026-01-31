@@ -390,7 +390,8 @@ class Player:
         elif self.animation_state == AnimationState.TRANSITIONING_TO_RUN:
             # Playing transition animation
             if self.current_animation.is_completed():
-                # Transition complete - switch to appropriate running animation based on direction
+                # Transition complete - switch to appropriate running animation
+                # based on direction
                 import logging
 
                 logger = logging.getLogger(__name__)
@@ -516,7 +517,8 @@ class Player:
         # Update movement keys pressed state
         self.movement_keys_pressed = movement_key_detected
 
-        # Don't clear movement_direction here - it needs to persist through the transition animation
+        # Don't clear movement_direction here - it needs to persist through
+        # the transition animation
         # It will be cleared when we return to IDLE state
 
         # If currently moving, use current grid position as starting point
