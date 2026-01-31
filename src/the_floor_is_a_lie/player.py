@@ -20,6 +20,7 @@ class AnimationState(Enum):
     RUNNING = "running"
     TRANSITIONING_TO_IDLE = "transitioning_to_idle"
     MASK_ACTIVATING = "mask_activating"
+    MASK_ACTIVE = "mask_active"
     MASK_DEACTIVATING = "mask_deactivating"
 
 
@@ -262,10 +263,17 @@ class Player:
         if self.animation_state == AnimationState.MASK_ACTIVATING:
             # Playing mask activation animation
             if self.current_animation.is_completed():
-                # Mask activation complete - return to idle
-                self.animation_state = AnimationState.IDLE
-                self.current_animation = self.idle_animation
-                self.current_animation.play()
+                # Mask activation complete - stay on last frame while mask is active
+                self.animation_state = AnimationState.MASK_ACTIVE
+                # Animation stays on last frame (don't restart)
+
+        elif self.animation_state == AnimationState.MASK_ACTIVE:
+            # Holding on mask animation last frame while mask is active
+            if not self.mask_active:
+                # Mask expired - start deactivation animation
+                self.animation_state = AnimationState.MASK_DEACTIVATING
+                self.current_animation = self.mask_animation
+                self.current_animation.play(reverse=True)
 
         elif self.animation_state == AnimationState.MASK_DEACTIVATING:
             # Playing mask deactivation animation (in reverse)
@@ -478,8 +486,8 @@ class Player:
         self.mask_available = False
         self.mask_recharge_timer = self.mask_cooldown
 
-        # Trigger mask deactivation animation (in reverse) if currently idle
-        if self.animation_state == AnimationState.IDLE:
+        # Trigger mask deactivation animation (in reverse) if currently in mask active state
+        if self.animation_state == AnimationState.MASK_ACTIVE:
             self.animation_state = AnimationState.MASK_DEACTIVATING
             self.current_animation = self.mask_animation
             self.current_animation.play(reverse=True)
