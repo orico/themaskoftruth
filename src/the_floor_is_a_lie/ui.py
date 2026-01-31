@@ -24,6 +24,62 @@ RESTART_FROM_LEVEL_1_EVENT = pygame.USEREVENT + 101
 CONTINUE_TO_NEXT_LEVEL_EVENT = pygame.USEREVENT + 102
 
 
+class MaskTextController:
+    """
+    Isolated controller for mask text display.
+    Manages the text state transitions for the mask UI element.
+    """
+
+    def __init__(self, ui_label: pygame_gui.elements.UILabel):
+        """
+        Initialize the mask text controller.
+
+        Args:
+            ui_label: The pygame_gui UILabel element to control
+        """
+        self.ui_label = ui_label
+        self._current_text = "Mask: Ready"
+        self._last_state = "ready"
+
+    def update_from_mask_status(self, mask_status: dict) -> None:
+        """
+        Update the mask text based on mask status.
+
+        Args:
+            mask_status: Dictionary containing mask state information:
+                - active (bool): Whether mask is currently active
+                - timer (float): Remaining time for active mask
+                - available (bool): Whether mask is ready to use
+                - recharge_timer (float): Remaining cooldown time
+        """
+        # Determine current state and text
+        if mask_status["active"]:
+            new_text = f"Mask: Active ({mask_status['timer']:.1f}s)"
+        elif not mask_status["available"]:
+            new_text = f"Mask: Recharging ({mask_status['recharge_timer']:.1f}s)"
+        else:
+            new_text = "Mask: Ready"
+
+        # Simply set the text - pygame_gui should handle it
+        self.ui_label.set_text(new_text)
+        self._current_text = new_text
+
+    def get_current_text(self) -> str:
+        """
+        Get the current displayed text.
+
+        Returns:
+            The current text string
+        """
+        return self._current_text
+
+    def reset(self) -> None:
+        """Reset the mask text to initial 'Ready' state."""
+        self.ui_label.set_text("Mask: Ready")
+        self._current_text = "Mask: Ready"
+        self._last_state = "ready"
+
+
 class UI:
     """User Interface management class"""
 
@@ -36,6 +92,9 @@ class UI:
         self.mask_recharge_text = None
         self.time_text = None
         self.mask_uses_text = None
+
+        # Mask text controller (initialized after UI elements are created)
+        self.mask_text_controller = None
 
         # Result screen elements
         self.result_panel = None
@@ -222,6 +281,9 @@ class UI:
             manager=self.ui_manager,
         )
 
+        # Initialize mask text controller after creating the UI element
+        self.mask_text_controller = MaskTextController(self.mask_timer_text)
+
         # Mask uses display (below mask timer on right side)
         self.mask_uses_text = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((self.config.SCREEN_WIDTH - 210, 70), (200, 30)),
@@ -247,15 +309,8 @@ class UI:
         mask_status = player.get_mask_status()
         stats = score_system.get_current_stats()
 
-        # Update mask timer display
-        if mask_status["active"]:
-            timer_text = f"Mask: Active ({mask_status['timer']:.1f}s)"
-        elif not mask_status["available"]:
-            timer_text = f"Mask: Loading ({mask_status['recharge_timer']:.1f}s)"
-        else:
-            timer_text = "Mask: Ready"
-
-        self.mask_timer_text.set_text(timer_text)
+        # Update mask timer display using the isolated controller
+        self.mask_text_controller.update_from_mask_status(mask_status)
 
         # Render mask icon if available and loaded
         if mask_status["available"] and self.mask_icon_loaded:
@@ -614,6 +669,8 @@ class UI:
         if self.mask_timer_text:
             self.mask_timer_text.kill()
             self.mask_timer_text = None
+        if self.mask_text_controller:
+            self.mask_text_controller = None
         if self.mask_recharge_text:
             self.mask_recharge_text.kill()
             self.mask_recharge_text = None

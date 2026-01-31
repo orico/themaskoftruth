@@ -470,6 +470,7 @@ class Player:
     def activate_mask(self):
         """Activate the mask"""
         self.mask_active = True
+        self.mask_available = False  # Mask is no longer available while active
         self.mask_timer = self.mask_duration
         self.mask_uses += 1
 
@@ -486,7 +487,7 @@ class Player:
         self.mask_available = False
         self.mask_recharge_timer = self.mask_cooldown
 
-        # Trigger mask deactivation animation (in reverse) if currently in mask active state
+        # Trigger reverse animation from MASK_ACTIVE
         if self.animation_state == AnimationState.MASK_ACTIVE:
             self.animation_state = AnimationState.MASK_DEACTIVATING
             self.current_animation = self.mask_animation

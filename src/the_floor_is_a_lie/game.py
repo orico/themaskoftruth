@@ -143,6 +143,11 @@ class Game:
                 If None, use current_level_index.
         """
         logger.debug("Initializing game modules...")
+
+        # Clean up old UI if it exists
+        if self.ui:
+            self.ui.cleanup()
+
         self.level = Level(self.config)
         self.score_system = ScoreSystem(self.config)
         self.ui = UI(self.config, self.ui_manager)
