@@ -203,6 +203,13 @@ class Level:
             for tile in row:
                 tile.render(screen, mask_active)
 
+    def render_tile_as_fake(self, screen: pygame.Surface, grid_pos: Tuple[int, int]):
+        """Render a specific tile with its fake/red appearance revealed"""
+        tile = self.get_tile(grid_pos)
+        if tile:
+            # Force render this tile with mask active (revealing red color)
+            tile.render(screen, mask_active=True)
+
     def get_level_info(self) -> Dict[str, Any]:
         """Get level information for display"""
         width = len(self.grid[0]) if self.grid else 0

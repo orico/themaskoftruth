@@ -3,7 +3,7 @@
 import json
 import logging
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import pygame
 import pygame_gui
@@ -55,8 +55,11 @@ class Game:
             logger.warning(f"Failed to load transparent button theme: {e}")
 
         # Game state
-        self.game_state = "menu"  # menu, playing, game_over, level_editor
+        self.game_state = "menu"  # menu, playing, dying, game_over, level_editor
         self.clock = pygame.time.Clock()
+
+        # Death animation state
+        self.death_position: Optional[Tuple[int, int]] = None
 
         # Level management
         self.levels_config: List[Dict] = []
@@ -282,6 +285,8 @@ class Game:
             # Update game state
             if self.game_state == "playing":
                 self.update_playing(time_delta)
+            elif self.game_state == "dying":
+                self.update_dying(time_delta)
             elif self.game_state == "level_editor":
                 self.level_editor.update(time_delta)
 
@@ -395,15 +400,44 @@ class Game:
 
         # Check if player fell (on empty tile)
         elif self.level.is_empty_tile(player_pos):
-            logger.warning("Player fell on empty tile - game over!")
-            self.game_over()
+            logger.warning("Player fell on empty tile - starting death sequence!")
+            self.start_death_sequence(player_pos)
 
         # Check if player stepped on fake tile (always dangerous)
         elif self.level.is_fake_tile(player_pos):
-            logger.warning("Player stepped on fake tile - game over!")
+            logger.warning("Player stepped on fake tile - starting death sequence!")
             # Play fake tile falling sound effects
             self.sound_effects.play_sound("fake_tile_fall")
             self.sound_effects.play_sound("fake_tile_fall_thump")
+            self.start_death_sequence(player_pos)
+
+    def start_death_sequence(self, death_pos: Tuple[int, int]):
+        """Start the death animation sequence"""
+        logger.info(f"Starting death sequence at position {death_pos}")
+        self.death_position = death_pos
+        self.game_state = "dying"
+
+        # Move player to the death position (12 pixels up)
+        center_x, center_y = self.config.get_grid_center(death_pos)
+        self.player.x = center_x
+        self.player.y = center_y - 12  # Move 12 pixels up
+        self.player.grid_x, self.player.grid_y = death_pos
+        self.player.target_grid_pos = None
+        self.player.velocity_x = 0
+        self.player.velocity_y = 0
+        self.player.moving = False
+
+        # Start death animation
+        self.player.start_death_animation()
+
+    def update_dying(self, delta_time: float):
+        """Update death animation sequence"""
+        # Update player (for animation)
+        self.player.update(delta_time)
+
+        # Check if death animation is complete
+        if self.player.is_death_animation_complete():
+            logger.info("Death animation complete - game over!")
             self.game_over()
 
     def game_win(self):
@@ -522,6 +556,22 @@ class Game:
             if self.player:
                 mask_status = self.player.get_mask_status()
                 self.ui.render_mask_image(self.screen, mask_status)
+
+        elif self.game_state == "dying":
+            # Render level normally (don't reveal all fake tiles)
+            mask_active = self.player.mask_active if self.player else False
+            self.level.render(self.screen, mask_active)
+
+            # Render the specific death tile as red
+            if self.death_position:
+                self.level.render_tile_as_fake(self.screen, self.death_position)
+
+            # Render player
+            if self.player:
+                self.player.render(self.screen)
+
+            # Render UI overlays
+            self.ui.render_game_ui(self.screen, self.player, self.score_system)
 
         elif self.game_state == "level_editor":
             self.level_editor.render(self.screen)

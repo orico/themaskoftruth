@@ -22,6 +22,7 @@ class AnimationState(Enum):
     MASK_ACTIVATING = "mask_activating"
     MASK_ACTIVE = "mask_active"
     MASK_DEACTIVATING = "mask_deactivating"
+    DEATH = "death"
 
 
 class Animation:
@@ -248,6 +249,16 @@ class Player:
             loop=False,  # Play once, can be reversed
         )
 
+        # Create death animation using the falling death sprite
+        self.death_animation = Animation(
+            "sprites/falling death.png",
+            rows=6,
+            cols=6,
+            frame_indices=list(range(36)),  # Use all 36 frames
+            frame_duration=0.08,  # Same timing as other animations
+            loop=False,  # Play once
+        )
+
         # Start with idle animation
         self.current_animation = self.idle_animation
         self.current_animation.play()
@@ -283,6 +294,11 @@ class Player:
                 self.animation_state = AnimationState.IDLE
                 self.current_animation = self.idle_animation
                 self.current_animation.play()
+
+        elif self.animation_state == AnimationState.DEATH:
+            # Death animation is playing - let it complete naturally
+            # (completion is checked externally by game.py)
+            pass
 
         # Handle movement physics
         if self.target_grid_pos:
@@ -538,6 +554,9 @@ class Player:
         self.current_animation.play()  # Start playing again
         self.facing_right = True
 
+        # Reset death animation if it was playing
+        self.death_animation.stop()
+
         # Reset mask
         self.mask_active = False
         self.mask_timer = 0
@@ -593,3 +612,16 @@ class Player:
             "available": self.mask_available,
             "uses": self.mask_uses,
         }
+
+    def start_death_animation(self):
+        """Start the death animation sequence"""
+        self.animation_state = AnimationState.DEATH
+        self.current_animation = self.death_animation
+        self.current_animation.play()
+
+    def is_death_animation_complete(self) -> bool:
+        """Check if death animation has completed"""
+        return (
+            self.animation_state == AnimationState.DEATH
+            and self.current_animation.is_completed()
+        )
