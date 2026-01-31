@@ -206,8 +206,9 @@ class Player:
         keyframe_indices = [0, 6, 12, 18, 24, 30]
 
         # Create idle animation (full 36-frame cycle)
+        idle_sprite_path = "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (3).png"  # noqa: E501
         self.idle_animation = Animation(
-            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (3).png",
+            idle_sprite_path,
             rows=6,
             cols=6,
             frame_indices=list(range(36)),  # Use all 36 frames
@@ -236,14 +237,14 @@ class Player:
         )
 
         # Create mask activation/deactivation animation
-        # Assuming 4x4 grid (16 frames) for the mask sprite sheet
-        mask_frame_indices = list(range(16))  # Use all 16 frames sequentially
+        # Assuming 6x6 grid (36 frames) for the mask sprite sheet
+        mask_frame_indices = list(range(36))  # Use all 36 frames sequentially
         self.mask_animation = Animation(
-            "sprites/A-2D-side-scroller-character-sprite-sheet-featurin-256px-16.png",
-            rows=4,
-            cols=4,
+            "sprites/Direct-overhead-2D-perspective-of-a-young-boy-with-256px-36 (2).png",
+            rows=6,
+            cols=6,
             frame_indices=mask_frame_indices,
-            frame_duration=0.1,  # Smooth mask animation
+            frame_duration=0.5 / 36,  # Fast animation: 0.5 seconds for 36 frames
             loop=False,  # Play once, can be reversed
         )
 
