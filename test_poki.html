@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Poki SDK Test</title>
+    <script src="https://game-cdn.poki.com/scripts/v2/poki-sdk.js"></script>
+</head>
+<body>
+    <h1>Poki SDK Test</h1>
+    <button onclick="testPokiSDK()">Test Poki SDK</button>
+    <div id="status"></div>
+
+    <script>
+        function testPokiSDK() {
+            const status = document.getElementById('status');
+
+            try {
+                // Check if Poki SDK is loaded
+                if (typeof PokiSDK !== 'undefined') {
+                    status.innerHTML += '✓ Poki SDK loaded<br>';
+
+                    // Test initialization
+                    PokiSDK.init();
+                    PokiSDK.setDebug(true);
+                    status.innerHTML += '✓ Poki SDK initialized<br>';
+
+                    // Test events
+                    PokiSDK.gameLoadingFinished();
+                    status.innerHTML += '✓ gameLoadingFinished called<br>';
+
+                    PokiSDK.gameplayStart();
+                    status.innerHTML += '✓ gameplayStart called<br>';
+
+                    PokiSDK.gameplayStop();
+                    status.innerHTML += '✓ gameplayStop called<br>';
+
+                    // Test commercial break
+                    PokiSDK.commercialBreak(() => {
+                        status.innerHTML += '✓ commercialBreak completed<br>';
+                    });
+                    status.innerHTML += '✓ commercialBreak started<br>';
+
+                } else {
+                    status.innerHTML += '✗ Poki SDK not loaded<br>';
+                }
+            } catch (error) {
+                status.innerHTML += '✗ Error: ' + error.message + '<br>';
+            }
+        }
+
+        // Auto-test on load
+        window.onload = function() {
+            document.getElementById('status').innerHTML = 'Testing Poki SDK...<br>';
+            testPokiSDK();
+        };
+    </script>
+</body>
+</html>

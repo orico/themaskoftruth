@@ -7,7 +7,7 @@ name = "the-floor-is-a-lie"
 version = "0.1.0"
 description = "A top-down memory puzzle game where the floor tiles lie to you"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Ori Cohen", email = "ori@oricohen.com"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
@@ -29,6 +29,7 @@ dependencies = [
     "pygame==2.5.2",
     "pygame_gui==0.6.9",
     "pydub>=0.25.1",
+    "pygbag",
 ]
 
 [project.optional-dependencies]

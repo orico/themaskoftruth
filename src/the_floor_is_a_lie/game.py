@@ -14,6 +14,7 @@ from .level import Level
 from .level_editor import LevelEditor
 from .music import Music
 from .player import Player
+from .poki_sdk import get_poki_sdk
 from .score import ScoreSystem
 from .sound_effects import SoundEffects
 from .ui import (
@@ -80,9 +81,29 @@ class Game:
         self.music: Optional[Music] = None
         self.sound_effects: Optional[SoundEffects] = None
 
+        # Initialize Poki SDK
+        # Temporarily disabled for debugging
+        self.poki_sdk = None
+        # try:
+        #     self.poki_sdk = get_poki_sdk()
+        #     if self.poki_sdk.init():
+        #         logger.info("Poki SDK initialized successfully")
+        #     else:
+        #         logger.warning("Poki SDK initialization failed")
+        # except Exception as e:
+        #     logger.error(f"Poki SDK initialization error: {e}")
+        #     self.poki_sdk = None
+
         # Initialize game
         self.initialize_game()
         logger.info("Game initialized successfully")
+
+        # Signal that game loading is finished
+        if self.poki_sdk:
+            try:
+                self.poki_sdk.gameLoadingFinished()
+            except Exception as e:
+                logger.error(f"Failed to call gameLoadingFinished: {e}")
 
     def load_levels_config(self) -> bool:
         """Load levels configuration from file."""
@@ -308,6 +329,12 @@ class Game:
             self.game_state = "playing"
             # Start the music sequence: intro sound first, then music
             self._start_music_sequence()
+            # Signal gameplay start to Poki SDK
+            if self.poki_sdk:
+                try:
+                    self.poki_sdk.gameplayStart()
+                except Exception as e:
+                    logger.error(f"Failed to call gameplayStart: {e}")
 
     def handle_game_events(self, event):
         """Handle events during gameplay."""
@@ -403,6 +430,13 @@ class Game:
         self.death_position = death_pos
         self.game_state = "dying"
 
+        # Signal gameplay stop to Poki SDK
+        if self.poki_sdk:
+            try:
+                self.poki_sdk.gameplayStop()
+            except Exception as e:
+                logger.error(f"Failed to call gameplayStop: {e}")
+
         # Move player to the death position (12 pixels up)
         center_x, center_y = self.config.get_grid_center(death_pos)
         self.player.x = center_x
@@ -428,6 +462,13 @@ class Game:
 
     def game_win(self):
         """Handle game win condition."""
+        # Signal gameplay stop to Poki SDK
+        if self.poki_sdk:
+            try:
+                self.poki_sdk.gameplayStop()
+            except Exception as e:
+                logger.error(f"Failed to call gameplayStop: {e}")
+
         # Play level completion sound
         self.sound_effects.play_sound("level_complete")
 
@@ -447,16 +488,38 @@ class Game:
     def restart_game(self):
         """Restart the current level."""
         logger.debug(f"Restarting level {self.current_level_index + 1}")
-        # Store current level index before reinitializing
-        current_idx = self.current_level_index
-        # Hide result screen before reinitializing
-        if self.ui:
-            self.ui.hide_result_screen()
-            self.ui.cleanup()
-        self.initialize_game(level_index=current_idx)  # Explicitly pass current level
-        self.game_state = "playing"
-        # Start the music sequence: intro sound first, then music
-        self._start_music_sequence()
+
+        # Show commercial break before restarting
+        def on_ad_complete():
+            # Store current level index before reinitializing
+            current_idx = self.current_level_index
+            # Hide result screen before reinitializing
+            if self.ui:
+                self.ui.hide_result_screen()
+                self.ui.cleanup()
+            self.initialize_game(
+                level_index=current_idx
+            )  # Explicitly pass current level
+            self.game_state = "playing"
+            # Start the music sequence: intro sound first, then music
+            self._start_music_sequence()
+            # Signal gameplay start after ad
+            if self.poki_sdk:
+                try:
+                    self.poki_sdk.gameplayStart()
+                except Exception as e:
+                    logger.error(f"Failed to call gameplayStart: {e}")
+
+        if self.poki_sdk:
+            try:
+                self.poki_sdk.commercialBreak(on_ad_complete)
+            except Exception as e:
+                logger.error(f"Failed to show commercial break: {e}")
+                # Fallback: proceed without ad
+                on_ad_complete()
+        else:
+            # No Poki SDK, proceed directly
+            on_ad_complete()
 
     def continue_to_next_level(self):
         """Continue to the next level or restart from level 1 if final level."""
@@ -467,27 +530,89 @@ class Game:
         next_level_index = self.get_next_level_index()
         if next_level_index is not None:
             logger.info(f"Continuing to level {next_level_index + 1}")
-            self.initialize_game(level_index=next_level_index)
+
+            # Show commercial break before continuing
+            def on_ad_complete():
+                self.initialize_game(level_index=next_level_index)
+                self.game_state = "playing"
+                # Start the music sequence: intro sound first, then music
+                self._start_music_sequence()
+                # Signal gameplay start after ad
+                if self.poki_sdk:
+                    try:
+                        self.poki_sdk.gameplayStart()
+                    except Exception as e:
+                        logger.error(f"Failed to call gameplayStart: {e}")
+
+            if self.poki_sdk:
+                try:
+                    self.poki_sdk.commercialBreak(on_ad_complete)
+                except Exception as e:
+                    logger.error(f"Failed to show commercial break: {e}")
+                    # Fallback: proceed without ad
+                    on_ad_complete()
+            else:
+                # No Poki SDK, proceed directly
+                on_ad_complete()
         else:
             # Final level completed - restart from level 1
             logger.info("All levels completed! Restarting from level 1")
-            self.initialize_game(level_index=0)
 
-        self.game_state = "playing"
-        # Start the music sequence: intro sound first, then music
-        self._start_music_sequence()
+            # Show commercial break before restarting
+            def on_ad_complete():
+                self.initialize_game(level_index=0)
+                self.game_state = "playing"
+                # Start the music sequence: intro sound first, then music
+                self._start_music_sequence()
+                # Signal gameplay start after ad
+                if self.poki_sdk:
+                    try:
+                        self.poki_sdk.gameplayStart()
+                    except Exception as e:
+                        logger.error(f"Failed to call gameplayStart: {e}")
+
+            if self.poki_sdk:
+                try:
+                    self.poki_sdk.commercialBreak(on_ad_complete)
+                except Exception as e:
+                    logger.error(f"Failed to show commercial break: {e}")
+                    # Fallback: proceed without ad
+                    on_ad_complete()
+            else:
+                # No Poki SDK, proceed directly
+                on_ad_complete()
 
     def restart_from_level_1(self):
         """Restart from level 1."""
         logger.debug("Restarting from level 1")
-        # Hide result screen before reinitializing
-        if self.ui:
-            self.ui.hide_result_screen()
-            self.ui.cleanup()
-        self.initialize_game(level_index=0)  # Start from level 1
-        self.game_state = "playing"
-        # Start the music sequence: intro sound first, then music
-        self._start_music_sequence()
+
+        # Show commercial break before restarting
+        def on_ad_complete():
+            # Hide result screen before reinitializing
+            if self.ui:
+                self.ui.hide_result_screen()
+                self.ui.cleanup()
+            self.initialize_game(level_index=0)  # Start from level 1
+            self.game_state = "playing"
+            # Start the music sequence: intro sound first, then music
+            self._start_music_sequence()
+            # Signal gameplay start after ad
+            if self.poki_sdk:
+                try:
+                    self.poki_sdk.gameplayStart()
+                except Exception as e:
+                    logger.error(f"Failed to call gameplayStart: {e}")
+
+        if self.poki_sdk:
+            try:
+                self.poki_sdk.commercialBreak(on_ad_complete)
+            except Exception as e:
+                logger.error(f"Failed to show commercial break: {e}")
+                # Fallback: proceed without ad
+                on_ad_complete()
+        else:
+            # No Poki SDK, proceed directly
+            on_ad_complete()
 
     def enter_level_editor(self):
         """Switch to level editor mode."""
