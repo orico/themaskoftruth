@@ -131,6 +131,7 @@ Thumbs.db
 
 # Game debug logs
 game_debug.log
+.buildozer/
 
 # Game assets (large files)
 
