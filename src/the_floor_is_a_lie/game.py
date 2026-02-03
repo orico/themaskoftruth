@@ -296,8 +296,8 @@ class Game:
         """Start the music sequence: play intro sound first, then music."""
         if self.sound_effects:
             self.sound_effects.play_sound("reach_the_exit")
-        # Start music after 2.85s delay (2850ms) - 25% reduction from 3.8s
-        pygame.time.set_timer(START_MUSIC_EVENT, 2850, loops=1)
+        # Start music after 2.18s delay (2175ms) - 25% reduction from 2.9s
+        pygame.time.set_timer(START_MUSIC_EVENT, 2175, loops=1)
 
     def handle_menu_events(self, event):
         """Handle events in the main menu."""

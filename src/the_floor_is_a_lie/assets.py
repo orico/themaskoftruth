@@ -94,7 +94,7 @@ class AssetManager:
             "mask_activate": "sound/audio-mortal-kombat-announcer-shouting-.mp3",
             "mask_ready": "sound/mask-ready.mp3",
             "mask_recharging": "sound/mask-recharging.mp3",
-            "reach_the_exit": "sound/reach-the-exit_speed_25pct.mp3",
+            "reach_the_exit": "sound/reach-the-exit-3-press_speed_25pct.mp3",
         }
 
         for sound_id, sound_path in sound_files.items():
