@@ -137,3 +137,9 @@ game_debug.log
 
 # Pre-commit
 .pre-commit-config.yaml.backup
+
+# Android build
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties

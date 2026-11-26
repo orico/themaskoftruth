@@ -1,0 +1,5 @@
+freesansbold.ttf is FreeSans Bold from GNU FreeFont, as shipped with pygame
+(it is pygame's default font, used by pygame.font.Font(None, size)).
+GNU FreeFont is licensed under the GNU GPL v3 or later, with the GPL font
+exception: embedding the font in a document or program does not by itself
+cause that work to be covered by the GPL. https://www.gnu.org/software/freefont/
