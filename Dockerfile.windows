@@ -1,0 +1,61 @@
+# Dockerfile for cross-compiling The Floor Is a Lie to Windows executable
+# This uses Wine to run Windows Python and PyInstaller on Linux/macOS
+
+FROM ubuntu:20.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV WINEPREFIX=/opt/wineprefix
+ENV WINEARCH=win64
+ENV DISPLAY=:0
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    software-properties-common \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Wine
+RUN dpkg --add-architecture i386 && \
+    wget -nc https://dl.winehq.org/wine-builds/winehq.key && \
+    apt-key add winehq.key && \
+    add-apt-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main' && \
+    apt-get update && \
+    apt-get install -y winehq-stable && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create Wine prefix
+RUN mkdir -p /opt/wineprefix && \
+    xvfb-run -a wine wineboot --init && \
+    wineserver -w
+
+# Install Python in Wine environment
+RUN cd /tmp && \
+    wget https://www.python.org/ftp/python/3.11.8/python-3.11.8-amd64.exe && \
+    xvfb-run -a wine python-3.11.8-amd64.exe /quiet /passive InstallAllUsers=1 PrependPath=1 && \
+    rm python-3.11.8-amd64.exe
+
+# Set up Python path
+ENV PATH="/opt/wineprefix/drive_c/Python311:/opt/wineprefix/drive_c/Python311/Scripts:$PATH"
+
+# Create working directory
+WORKDIR /app
+
+# Copy project files
+COPY . /app/
+
+# Install Python dependencies via pip in Wine
+RUN xvfb-run -a wine python -m pip install --upgrade pip
+RUN xvfb-run -a wine python -m pip install pyinstaller pygame pygame_gui pydub
+
+# Build the executable
+RUN xvfb-run -a wine python -m pip install pyinstaller
+RUN xvfb-run -a wine pyinstaller --clean game.spec
+
+# Create output directory
+RUN mkdir -p /output
+
+# Copy the built executable and required files
+CMD ["cp", "-r", "dist", "/output/"]
