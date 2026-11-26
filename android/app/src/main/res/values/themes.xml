@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Plain framework theme: no AndroidX needed. Background matches Config.BACKGROUND_COLOR. -->
+    <style name="GameTheme" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/game_background</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:navigationBarColor">@color/game_background</item>
+        <item name="android:statusBarColor">@color/game_background</item>
+    </style>
+    <color name="game_background">#14141E</color>
+</resources>
